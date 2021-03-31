@@ -1,0 +1,31 @@
+{
+  "name": "npm-package-template",
+  "version": "0.0.1",
+  "description": "template for creating new package",
+  "main": "./dist/index",
+  "types": "./dist/index.d.ts",
+  "repository": "git@github.com:mmisty/npm-package-template.git",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": "Taisia Pitko (mmisty) <minydas@yandex.ru>",
+  "license": "MIT",
+  "scripts": {
+    "prepublish": "pretty-quick && tsc",
+    "build": "tsc",
+    "fmt": "pretty-quick"
+  },
+  "keywords": [
+    "template"
+  ],
+  "devDependencies": {
+    "prettier": "~2.0.5",
+    "pretty-quick": "^3.0.0",
+    "tslib": "^2.0.1",
+    "tsutils": "~3.17.0",
+    "typescript": "~3.9.7"
+  },
+  "dependencies": {
+    "@types/node": "^13.0.0"
+  }
+}
