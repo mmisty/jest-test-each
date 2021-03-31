@@ -1,10 +1,10 @@
 {
-  "name": "npm-package-template",
+  "name": "jest-test-each",
   "version": "0.0.1",
   "description": "template for creating new package",
   "main": "./dist/index",
   "types": "./dist/index.d.ts",
-  "repository": "git@github.com:mmisty/npm-package-template.git",
+  "repository": "git@github.com:mmisty/jest-test-each.git",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
@@ -19,13 +19,13 @@
     "template"
   ],
   "devDependencies": {
-    "prettier": "~2.0.5",
-    "pretty-quick": "^3.0.0",
-    "tslib": "^2.0.1",
-    "tsutils": "~3.17.0",
-    "typescript": "~3.9.7"
+    "prettier": "~2.2.1",
+    "pretty-quick": "~3.1.0",
+    "tslib": "~2.1.0",
+    "tsutils": "~3.21.0",
+    "typescript": "~4.2.3"
   },
   "dependencies": {
-    "@types/node": "^13.0.0"
+    "@types/node": "~14.14.37"
   }
 }
