@@ -4,11 +4,8 @@ class TestInt<T = {}> {
   eaches: T[] = [];
   desc: string = '';
 
-  constructor(desc: string, input?: TestInt<T>) {
+  constructor(desc: string, private config: TestSetupType) {
     this.desc = desc;
-    if (input?.eaches) {
-      this.eaches = input?.eaches;
-    }
   }
 
   each<K>(cases: K[]): TestInt<T & K> {
@@ -26,8 +23,9 @@ class TestInt<T = {}> {
 
   run(body: (each: T) => void) {
     describe(this.desc, () => {
-      for (const each of this.eaches) {
-        it(`${JSON.stringify(each)}`, async () => {
+      for (const [i, each] of this.eaches.entries()) {
+        const isNum = this.config.numericCases;
+        it(`${isNum ? i + ', ' : ''}${JSON.stringify(each)}`, async () => {
           await body(each);
         });
       }
@@ -35,4 +33,20 @@ class TestInt<T = {}> {
   }
 }
 
-export const Test = (desc: string) => new TestInt(desc);
+const testConfigDefault: TestSetupType = {
+  numericCases: true,
+};
+
+let testConfig = testConfigDefault;
+
+export const TestEach = {
+  setup: (config: TestSetupType) => {
+    testConfig = { ...testConfigDefault, ...config };
+  },
+};
+
+export const Test = (desc: string) => new TestInt(desc, testConfig);
+
+type TestSetupType = {
+  numericCases: boolean;
+};
