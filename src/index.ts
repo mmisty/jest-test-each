@@ -35,16 +35,16 @@ const getName = <T>(obj: T) => {
       .filter(p => p !== 'desc')
       .map(p => {
         if (Array.isArray(untypedObj[p])) {
-          return `${p}:[${untypedObj[p]}]`;
+          return `${p}: [${untypedObj[p]}]`;
         }
 
         if (typeof untypedObj[p] === 'object') {
-          return `${p}:${JSON.stringify(untypedObj[p])}`;
+          return `${p}: ${JSON.stringify(untypedObj[p])}`;
         }
 
-        return `${p}:${untypedObj[p]}`;
+        return `${p}: ${untypedObj[p]}`;
       })
-      .join(',');
+      .join(', ');
 
   return flatDesc || (desc ? (typeof desc === 'function' ? desc(obj) : desc) : combined());
 };
@@ -177,6 +177,7 @@ export class TestEach<Combined = {}> {
       allCases.every(t => t.name),
       'Every case in .each should have not empty data',
     );
+    guard(allCases.length !== 0, 'Should be at least one case');
 
     const run = () =>
       treeWalk(
