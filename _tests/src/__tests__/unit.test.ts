@@ -1,31 +1,48 @@
 import { tree } from '../../../src';
 
 describe('units', function () {
-  it('node', () => {
+  it('check tree', () => {
     const data: any[][] = [
       [{ abc: 1 }, { abc: 2 }],
       [{ efg: 1 }, { efg: 2 }, { efg: 3 }],
       [{ hij: 1 }, { hij: 3 }],
     ];
-    /*
-    abc 1
-    --efg 1
-    ----hij 1 test
-    ----hij 3 test
-    --efg 2
-    ----hij 1 test
-    --efg 3
-    ----hij 1 test
-    abc 2
-    --efg 1
-    ----hij
-    --efg 2
-    ----hij 1
-    --efg 3
-    ----hij 1
-    * */
 
-    const nodes = tree(data);
-    expect(nodes).toEqual({ a: '' });
+    const root = tree(data);
+    let result = [];
+    const byTree = (node: any, level: number) => {
+      result.push(' '.repeat(level * 2) + 'suite:' + node.name);
+      node.tests.forEach((c) => {
+        result.push(' '.repeat(level * 4) + 'test:' + c.name);
+      });
+      node.children.forEach((c, i) => {
+        byTree(c, level + 1);
+      });
+    };
+
+    byTree(root, 0);
+    expect(result.join('\n-')).toMatchInlineSnapshot(`
+      "suite:
+      -  suite:abc:1
+      -    suite:efg:1
+      -        test:hij:1
+      -        test:hij:3
+      -    suite:efg:2
+      -        test:hij:1
+      -        test:hij:3
+      -    suite:efg:3
+      -        test:hij:1
+      -        test:hij:3
+      -  suite:abc:2
+      -    suite:efg:1
+      -        test:hij:1
+      -        test:hij:3
+      -    suite:efg:2
+      -        test:hij:1
+      -        test:hij:3
+      -    suite:efg:3
+      -        test:hij:1
+      -        test:hij:3"
+    `);
   });
 });

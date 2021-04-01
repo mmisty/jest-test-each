@@ -136,12 +136,12 @@ export class TestInt<T = {}> {
   }
 
   run(body: (each: T) => void) {
-    const isNum = this.config.numericCases;
-    const isGroup = this.config.groupBySuites;
+    const isNumberedTestAndSuite = this.config.numericCases;
+    const isGroupBySuites = this.config.groupBySuites;
     const root = tree(this.groups);
 
     const entityName = (num: number, name: string) => {
-      return `${isNum ? num + '. ' : ''}${name}`;
+      return `${isNumberedTestAndSuite ? num + '. ' : ''}${name}`;
     };
 
     const runCase = <T>(body: (each: T) => void) => (
@@ -174,10 +174,10 @@ export class TestInt<T = {}> {
 
     const runFlat = () => allCases.forEach(runCase(body));
 
-    runSuite(
+    return runSuite(
       this.env.suiteRunner,
       !!this.desc,
-      isGroup ? run : runFlat,
+      isGroupBySuites ? run : runFlat,
       this.desc,
     );
   }

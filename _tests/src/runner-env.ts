@@ -12,6 +12,7 @@ type ResultType = {
   suites: string[];
   tests: string[];
 };
+
 export const result: ResultType = {
   failures: [],
   passes: [],
@@ -19,6 +20,7 @@ export const result: ResultType = {
   suites: [],
   tests: [],
 };
+
 // todo think
 export const cleanup = () => {
   result.failures = [];
@@ -28,23 +30,25 @@ export const cleanup = () => {
   result.suites = [];
   result.tests = [];
 };
+
 type Pass = {
   name: string;
 };
+
 type Failure = {
   name: string;
   message: string;
 };
 
 const suiteRunner: SuiteRunner = (name: string, body: () => void) => {
-  console.log('Suite started: ' + name);
+  // console.log('Suite started: ' + name);
   result.totalEntities++;
   result.suites.push(name);
   body();
 };
 
 const testRunner: TestRunner = async (name: string, body: () => void) => {
-  console.log('Test started: ' + name);
+  // console.log('Test started: ' + name);
   let wasError = false;
   result.totalEntities++;
   result.tests.push(name);
@@ -53,11 +57,12 @@ const testRunner: TestRunner = async (name: string, body: () => void) => {
   } catch (err) {
     wasError = true;
     result.failures.push({ name, message: stripAnsi(err.message) });
-    console.log('Test has error:\n===\n' + err + '\n===');
+    // console.log('Test has error:\n===\n' + err + '\n===');
   }
 
   if (!wasError) {
-    result.passes.push({ name });
+    result.passes.push({ name: name });
+    // console.log('Test passed\n===');
   }
 };
 

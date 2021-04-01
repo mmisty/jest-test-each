@@ -11,7 +11,7 @@
   "author": "Taisia Pitko (mmisty) <minydas@yandex.ru>",
   "license": "MIT",
   "scripts": {
-    "prepublish": "pretty-quick && tsc",
+    "prepublish": "pretty-quick && tsc && cd ./_tests && yarn test",
     "build": "rm -rf dist/ && tsc",
     "fmt": "pretty-quick"
   },
