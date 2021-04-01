@@ -12,7 +12,7 @@ describe('units', function () {
     let result = [];
     const byTree = (node: any, level: number) => {
       result.push(' '.repeat(level * 2) + 'suite:' + node.name);
-      node.tests.forEach((c) => {
+      node.tests.forEach(c => {
         result.push(' '.repeat(level * 4) + 'test:' + c.name);
       });
       node.children.forEach((c, i) => {
@@ -23,26 +23,26 @@ describe('units', function () {
     byTree(root, 0);
     expect(result.join('\n-')).toMatchInlineSnapshot(`
       "suite:
-      -  suite:abc:1
-      -    suite:efg:1
-      -        test:hij:1
-      -        test:hij:3
-      -    suite:efg:2
-      -        test:hij:1
-      -        test:hij:3
-      -    suite:efg:3
-      -        test:hij:1
-      -        test:hij:3
-      -  suite:abc:2
-      -    suite:efg:1
-      -        test:hij:1
-      -        test:hij:3
-      -    suite:efg:2
-      -        test:hij:1
-      -        test:hij:3
-      -    suite:efg:3
-      -        test:hij:1
-      -        test:hij:3"
+      -  suite:abc: 1
+      -    suite:efg: 1
+      -        test:hij: 1
+      -        test:hij: 3
+      -    suite:efg: 2
+      -        test:hij: 1
+      -        test:hij: 3
+      -    suite:efg: 3
+      -        test:hij: 1
+      -        test:hij: 3
+      -  suite:abc: 2
+      -    suite:efg: 1
+      -        test:hij: 1
+      -        test:hij: 3
+      -    suite:efg: 2
+      -        test:hij: 1
+      -        test:hij: 3
+      -    suite:efg: 3
+      -        test:hij: 1
+      -        test:hij: 3"
     `);
   });
 });
