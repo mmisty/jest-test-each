@@ -158,7 +158,7 @@ type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
 
 //type FullInputCaseType<T, TOut> = Input<T, TOut> | WithComplexDesc<TOut>;
 
-export class TestInt<T = {}> {
+export class TestEach<T = {}> {
   private groups: T[][] = [];
   private desc: string | undefined = '';
   private config: TestSetupType;
@@ -170,7 +170,7 @@ export class TestInt<T = {}> {
 
   // todo: ability to use t=> [] or []
   // todo: case formatting name sprintf
-  each<TOut>(cases: Input<T, TOut>): TestInt<T & TOut> {
+  each<TOut>(cases: Input<T, TOut>): TestEach<T & TOut> {
     this.groups.push(cases as any);
     //cases.forEach(p=>p.desc)
     return this as any;
@@ -231,14 +231,12 @@ const testConfigDefault: TestSetupType = {
 
 let testConfig: TestSetupType = testConfigDefault;
 
-export const TestEach = {
-  setup: (config: Partial<TestSetupType>) => {
-    testConfig = { ...testConfigDefault, ...config };
-  },
+export const TestEachSetup = (config: Partial<TestSetupType>) => {
+  testConfig = { ...testConfigDefault, ...config };
 };
 
 export const Test = (desc?: string) =>
-  new TestInt(desc, {
+  new TestEach(desc, {
     suiteRunner: describe,
     testRunner: it,
   });

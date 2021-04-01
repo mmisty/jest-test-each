@@ -1,5 +1,5 @@
 import { CustomConsole, LogMessage, LogType } from '@jest/console';
-import { TestEach } from '../../src';
+import { TestEach, TestEachSetup } from '../../src';
 
 export const dateStr = () => {
   const date = new Date(Date.now());
@@ -30,4 +30,4 @@ global.console = new CustomConsole(
   simpleFormatter,
 );
 
-TestEach.setup({ numericCases: true, groupBySuites: true });
+TestEachSetup({ numericCases: true, groupBySuites: true });

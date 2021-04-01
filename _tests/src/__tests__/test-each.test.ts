@@ -1,6 +1,6 @@
 import { cleanup, result, TestEachTesting, testRunnerEnv } from '../runner-env';
 import { assertAll } from '../../../src/utils/utils';
-import { TestEach } from '../../../src';
+import { TestEachSetup } from '../../../src';
 
 const rootName = 'Test pack - root';
 const test = () => TestEachTesting(testRunnerEnv)(rootName);
@@ -22,7 +22,7 @@ describe('Test jest test each', () => {
       it(`cases should ${
         c.isNum ? '' : 'not '
       }be numbered when numericCases in setup is ${c.isNum}`, async () => {
-        TestEach.setup({ groupBySuites: true, numericCases: c.isNum });
+        TestEachSetup({ groupBySuites: true, numericCases: c.isNum });
 
         await test()
           .each([{ something: 'a' }, { something: 'ab' }])
@@ -43,7 +43,7 @@ describe('Test jest test each', () => {
       it(`suites should ${
         c.isNum ? '' : 'not '
       }be numbered when numericCases in setup is ${c.isNum}`, async () => {
-        TestEach.setup({ groupBySuites: true, numericCases: c.isNum });
+        TestEachSetup({ groupBySuites: true, numericCases: c.isNum });
 
         await test()
           .each([{ something: 'a' }, { something: 'ab' }])
@@ -69,7 +69,7 @@ describe('Test jest test each', () => {
   });
 
   it('Pass and fail', async () => {
-    TestEach.setup({ groupBySuites: true, numericCases: false });
+    TestEachSetup({ groupBySuites: true, numericCases: false });
 
     await test()
       .each([{ something: 'a' }, { something: 'ab' }])
@@ -91,7 +91,7 @@ describe('Test jest test each', () => {
   });
 
   it('test2', async () => {
-    TestEach.setup({ groupBySuites: true, numericCases: true });
+    TestEachSetup({ groupBySuites: true, numericCases: true });
 
     await test()
       .each([{ something1: 'a' }])
@@ -119,7 +119,7 @@ describe('Test jest test each', () => {
   });
 
   it('should throw', async () => {
-    TestEach.setup({ groupBySuites: true, numericCases: true });
+    TestEachSetup({ groupBySuites: true, numericCases: true });
 
     await test()
       .each([{ something1: 'a' }])
