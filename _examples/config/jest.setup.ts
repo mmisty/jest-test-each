@@ -30,4 +30,4 @@ global.console = new CustomConsole(
   simpleFormatter,
 );
 
-TestEach.setup({ numericCases: true });
+TestEach.setup({ numericCases: true, groupBySuites: false });

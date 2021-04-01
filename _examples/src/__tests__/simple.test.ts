@@ -44,7 +44,7 @@ describe('simple-suite', () => {
 
   describe('entry point to start Test', () => {
     Test()
-      .each([{}])
+      .each([{ c: 'd' }])
       .run(async (t) => {
         expect(1).toBe(1);
       });

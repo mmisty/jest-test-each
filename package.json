@@ -12,7 +12,7 @@
   "license": "MIT",
   "scripts": {
     "prepublish": "pretty-quick && tsc",
-    "build": "tsc",
+    "build": "rm -rf dist/ && tsc",
     "fmt": "pretty-quick"
   },
   "keywords": [

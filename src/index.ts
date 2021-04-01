@@ -1,4 +1,4 @@
-// type Combined<T, K> = T & K;
+import { guard } from './utils/utils';
 
 export type casesType<T = {}> = T[];
 
@@ -33,6 +33,36 @@ const getName = <T>(obj: string | T) => {
   const props = Object.getOwnPropertyNames(obj);
   return props.map((p) => `${p}:${(obj as any)[p]}`).join(',');
 };
+
+const caseName = <T>(each: T): string => {
+  if ((each as any).desc) {
+    return (each as any).desc;
+  }
+  const keys = Object.keys(each);
+  return keys
+    .map((k: string) =>
+      typeof (each as any)[k] === 'string'
+        ? (each as any)[k]
+        : JSON.stringify(each),
+    )
+    .join(' ');
+};
+
+const runSuite = (
+  suiteRunner: SuiteRunner,
+  wrapWithDescribe: boolean,
+  callback: () => void,
+  suiteName?: string,
+) => {
+  if (wrapWithDescribe && suiteName) {
+    suiteRunner(suiteName, () => {
+      callback();
+    });
+    return;
+  }
+  callback();
+};
+
 export const tree = (levels: any[][]): Node => {
   const root = createNode({});
 
@@ -64,95 +94,115 @@ export const tree = (levels: any[][]): Node => {
   return root;
 };
 
-class TestInt<T = {}> {
-  eaches: T[] = [];
-  groups: T[][] = [];
-  desc: string | undefined = '';
+const treeWalk = (
+  node: Node,
+  onEachNode: ((c: Node, i: number, inside: () => void) => void) | undefined,
+  onEachTest: (t: OneTest<any>, i: number) => void,
+) => {
+  node.children.forEach((c, i) => {
+    if (onEachNode) {
+      onEachNode(c, i, () => treeWalk(c, onEachNode, onEachTest));
+    } else {
+      treeWalk(c, onEachNode, onEachTest);
+    }
+  });
+  node.tests.forEach((t, i) => {
+    onEachTest(t, i);
+  });
+};
+export type SuiteRunner = (name: string, body: () => void) => void;
+export type TestRunner = (name: string, body: () => void) => void;
 
-  constructor(desc: string | undefined, private config: TestSetupType) {
+export type Env = {
+  suiteRunner: SuiteRunner;
+  testRunner: TestRunner;
+};
+
+export class TestInt<T = {}> {
+  private groups: T[][] = [];
+  private desc: string | undefined = '';
+  private config: TestSetupType;
+
+  constructor(desc: string | undefined, private env: Env) {
     this.desc = desc;
+    this.config = testConfig;
   }
 
   // todo: ability to use t=> [] or []
   // todo: case formatting name sprintf
-  // todo: group by suites
   each<K>(cases: K[]): TestInt<T & K> {
     this.groups.push(cases as any);
-    /* if (this.eaches.length > 0) {
-      let newM: (T & K)[] = [];
-      this.eaches.forEach((x) => {
-        cases.forEach((k) => newM.push({ ...x, ...k }));
-      });
-      this.eaches = newM;
-      return this as any;
-    }
-    this.eaches.push(...(cases as (T & K)[]));*/
     return this as any;
   }
 
   run(body: (each: T) => void) {
+    const isNum = this.config.numericCases;
+    const isGroup = this.config.groupBySuites;
     const root = tree(this.groups);
 
-    const run = (node: Node) => {
-      node.children.forEach((c) => {
-        describe(c.name, () => {
-          run(c);
-        });
-      });
-      node.tests.forEach((t) => {
-        it(t.name, async () => {
-          await body(t.data); // todo;
-        });
-      });
+    const entityName = (num: number, name: string) => {
+      return `${isNum ? num + '. ' : ''}${name}`;
     };
-    run(root);
 
-    /*const runSuite = () => {
-      for (const [i, each] of this.eaches.entries()) {
-        const isNum = this.config.numericCases;
-
-        const caseName = (each: T): string => {
-          if ((each as any).desc) {
-            return (each as any).desc;
-          }
-          const keys = Object.keys(each);
-          return keys
-            .map((k: string) =>
-              typeof (each as any)[k] === 'string'
-                ? (each as any)[k]
-                : JSON.stringify(each),
-            )
-            .join(' ');
-        };
-        it(`${isNum ? i + 1 + ', ' : ''}${caseName(each)}`, async () => {
-          await body(each);
-        });
-      }
+    const runCase = <T>(body: (each: T) => void) => (
+      t: OneTest<T>,
+      i: number,
+    ) => {
+      guard(!!t.name, 'Test should have name (empty group of cases)');
+      const name = entityName(i + 1, t.name);
+      this.env.testRunner(name, () => body(t.data)); // todo;
     };
-    if (this.desc) {
-      describe(this.desc, () => {
-        runSuite();
-      });
-    } else {
-      runSuite();
-    }*/
+
+    const allCases: OneTest<any>[] = [];
+    treeWalk(root, undefined, (t) => {
+      allCases.push({ ...t, name: getName(t.data) });
+    });
+
+    guard(
+      allCases.every((t) => t.name),
+      'Every case in .each should have not empty data',
+    );
+
+    const run = () =>
+      treeWalk(
+        root,
+        (t, i, inside) => {
+          this.env.suiteRunner(entityName(i + 1, t.name), inside);
+        },
+        runCase(body),
+      );
+
+    const runFlat = () => allCases.forEach(runCase(body));
+
+    runSuite(
+      this.env.suiteRunner,
+      !!this.desc,
+      isGroup ? run : runFlat,
+      this.desc,
+    );
   }
 }
 
 const testConfigDefault: TestSetupType = {
   numericCases: true,
+  groupBySuites: true,
 };
 
-let testConfig = testConfigDefault;
+let testConfig: TestSetupType = testConfigDefault;
 
 export const TestEach = {
-  setup: (config: TestSetupType) => {
+  setup: (config: Partial<TestSetupType>) => {
     testConfig = { ...testConfigDefault, ...config };
   },
 };
 
-export const Test = (desc?: string) => new TestInt(desc, testConfig);
+export const Test = (desc?: string) =>
+  new TestInt(desc, {
+    suiteRunner: describe,
+    testRunner: it,
+  });
 
-type TestSetupType = {
+export type TestSetupType = {
   numericCases: boolean;
+  groupBySuites: boolean;
 };
