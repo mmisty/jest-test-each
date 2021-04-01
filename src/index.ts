@@ -71,11 +71,11 @@ const caseName = <T>(each: T): string => {
 
 const runSuite = (
   suiteRunner: SuiteRunner,
-  wrapWithDescribe: boolean,
   callback: () => void,
   suiteName?: string,
+  
 ) => {
-  if (wrapWithDescribe && suiteName) {
+  if (suiteName) {
     suiteRunner(suiteName, () => {
       callback();
     });
@@ -167,9 +167,8 @@ export class TestEach<T = {}> {
     this.desc = desc;
     this.config = testConfig;
   }
-
-  // todo: ability to use t=> [] or []
-  // todo: case formatting name sprintf
+  
+  // todo: defect addition
   each<TOut>(cases: Input<T, TOut>): TestEach<T & TOut> {
     this.groups.push(cases as any);
     //cases.forEach(p=>p.desc)
@@ -194,7 +193,7 @@ export class TestEach<T = {}> {
       this.env.testRunner(name, () => body(t.data)); // todo;
     };
 
-    const allCases: OneTest<any>[] = [];
+    const allCases: OneTest<T>[] = [];
     treeWalk(root, undefined, (t) => {
       allCases.push({ ...t, name: getName(t.data) });
     });
@@ -217,7 +216,6 @@ export class TestEach<T = {}> {
 
     return runSuite(
       this.env.suiteRunner,
-      !!this.desc,
       isGroupBySuites ? run : runFlat,
       this.desc,
     );
