@@ -92,9 +92,13 @@ export const tree = (levels: any[][]): Node => {
       if (nextLevel !== levelNum) {
         continue;
       }
+      const newCases =
+        typeof cases === 'function' ? (cases as any)(node.previousData) : cases;
+
       if (levelNum === levels.length - 1) {
         // last level
-        cases.forEach((p) => {
+
+        newCases.forEach((p: any) => {
           node.tests.push({
             name: getName(p),
             desc: p.desc || getName(p),
@@ -103,7 +107,7 @@ export const tree = (levels: any[][]): Node => {
         });
         return;
       } else {
-        cases.forEach((p) => {
+        newCases.forEach((p: any) => {
           const child = createNode(p, node);
           populateNodes(child, levelNum + 1);
           node.children.push(child);
@@ -141,11 +145,18 @@ export type Env = {
 };
 
 type WithDesc = { desc?: string };
-type InputCaseType<T> = T & WithDesc;
+
+type InputCaseType<T> = T & WithDesc; // WithDesc => should have field in type for further union
+
+type SimpleCase<T> = InputCaseType<T> | WithComplexDesc<T>;
+type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo
+
+type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
+
 type DescFunc<T> = (k: T) => string;
 type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
 
-type FullInputCaseType<T> = InputCaseType<T> | WithComplexDesc<T>;
+//type FullInputCaseType<T, TOut> = Input<T, TOut> | WithComplexDesc<TOut>;
 
 export class TestInt<T = {}> {
   private groups: T[][] = [];
@@ -159,7 +170,7 @@ export class TestInt<T = {}> {
 
   // todo: ability to use t=> [] or []
   // todo: case formatting name sprintf
-  each<K>(cases: FullInputCaseType<K>[]): TestInt<T & K> {
+  each<TOut>(cases: Input<T, TOut>): TestInt<T & TOut> {
     this.groups.push(cases as any);
     //cases.forEach(p=>p.desc)
     return this as any;

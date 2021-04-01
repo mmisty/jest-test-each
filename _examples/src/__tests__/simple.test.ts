@@ -13,15 +13,20 @@ describe('simple-suite', () => {
 
   describe('test 2', () => {
     Test()
-      .each([{ addition: 'milk' }, { addition: 'ice-cream' }])
-      .each([
+      .each([{ abc: 'abc' }, { abc: 'def' }])
+      .each((t) => [
+        { addition: 'milk=' + t.abc },
+        { addition: 'ice-cream=' + t.abc },
+      ])
+      .each((t) => [{ ggg: 'milk=' + t.abc }])
+      .each((t) => [
         {
-          desc: 'some desc',
+          desc: 'some desc:' + t.addition,
           fruits: ['banana', 'orange'],
           vegs: ['tomato'],
         },
         {
-          desc: (k) => `fruits should not have [${k.vegs}]`,
+          desc: (k) => `fruits should not have [${k.vegs}, ${t.ggg}]`,
           fruits: ['banana', 'orange'],
           vegs: ['tomato'],
         },
@@ -30,7 +35,7 @@ describe('simple-suite', () => {
           vegs: ['orange'],
         },
       ])
-      .each([{ k: 'd' }])
+      .each((t) => [{ k: 'd' + t.vegs }])
       .run(async (t) => {
         console.log(`${t.fruits} ${t.addition}`);
         expect(t.fruits.length).toBeGreaterThan(0);
