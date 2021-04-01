@@ -1,0 +1,30 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+src
+examples
+tsconfig.json
+tslint.json
+.prettierrc
+index.ts
+
+package
+*.tgz
+
+# VS Code
+.vscode
+!.vscode/tasks.js
+
+# JetBrains IDEs
+.idea/
+
+# Optional npm cache directory
+.npm
+
+# Misc
+.DS_Store
+
+# test
+allure-results
