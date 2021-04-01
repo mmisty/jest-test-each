@@ -11,36 +11,31 @@ describe('simple-suite', () => {
       expect(t.addition).toMatch(/\w*/);
     });
 
-  /*
-   * banana
-   * --milk
-   * --ice cream
-   * strawberry
-   * --milk
-   * --icecream
-   *
-   *
-   *
-   * */
-
-  Test('test 2')
-    .each([
-      {
-        desc: 'complex case 1',
-        fruits: ['banana', 'orange'],
-        vegs: ['tomato'],
-      },
-      {
-        desc: 'complex case 2',
-        fruits: ['banana', 'orange'],
-        vegs: ['tomato'],
-      },
-    ])
-    .each([{ addition: 'milk' }, { addition: 'ice-cream' }])
-    .run(async (t) => {
-      console.log(`${t.fruits} ${t.addition}`);
-      expect(t.fruits.length).toBeGreaterThan(0);
-    });
+  describe('test 2', () => {
+    Test()
+      .each([{ addition: 'milk' }, { addition: 'ice-cream' }])
+      .each([
+        {
+          desc: 'some desc',
+          fruits: ['banana', 'orange'],
+          vegs: ['tomato'],
+        },
+        {
+          desc: (k) => `fruits should not have [${k.vegs}]`,
+          fruits: ['banana', 'orange'],
+          vegs: ['tomato'],
+        },
+        {
+          fruits: ['pineapple', 'apple', 'orange'],
+          vegs: ['orange'],
+        },
+      ])
+      .each([{ k: 'd' }])
+      .run(async (t) => {
+        console.log(`${t.fruits} ${t.addition}`);
+        expect(t.fruits.length).toBeGreaterThan(0);
+      });
+  });
 
   describe('entry point to start Test', () => {
     Test()
@@ -48,5 +43,26 @@ describe('simple-suite', () => {
       .run(async (t) => {
         expect(1).toBe(1);
       });
+  });
+
+  it('sdsd', () => {
+    const printf = require('printf');
+
+    const cases = [
+      {
+        desc: (k) => printf('complex case %s %a', k.fruits),
+        fruits: ['banana', 'orange'],
+        vegs: ['tomato'],
+      },
+      {
+        desc: (k) => `${k.fruits[0]}`,
+        fruits: ['banana', 'orange'],
+        vegs: ['tomato'],
+      },
+    ];
+
+    cases.forEach((k) => {
+      console.log(k.desc(k));
+    });
   });
 });

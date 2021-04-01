@@ -1,9 +1,11 @@
 import { guard } from './utils/utils';
+const printf = require('printf');
 
 export type casesType<T = {}> = T[];
 
 type OneTest<T> = {
   name: string;
+  desc: string | ((k: OneTest<T>) => string);
   data: T;
 };
 
@@ -26,14 +28,33 @@ const createNode = <T>(obj: T, parent?: Node): Node => {
   };
 };
 
-const getName = <T>(obj: string | T) => {
-  if (typeof obj === 'string') {
-    return obj;
-  }
-  const props = Object.getOwnPropertyNames(obj);
-  return props.map((p) => `${p}:${(obj as any)[p]}`).join(',');
-};
+const getName = <T>(obj: T) => {
+  const untypedObj = obj as any;
+  const desc = untypedObj.desc;
+  const props = Object.getOwnPropertyNames(obj).filter((p) => p !== 'desc');
+  const combined = props
+    .map((p) => {
+      if (Array.isArray(untypedObj[p])) {
+        return `${p}:[${untypedObj[p]}]`;
+      }
 
+      if (typeof untypedObj[p] === 'object') {
+        return `${p}:${JSON.stringify(untypedObj[p])}`;
+      }
+
+      return `${p}:${untypedObj[p]}`;
+    })
+    .join(',');
+
+  if (desc) {
+    if (typeof desc === 'function') {
+      return desc(obj);
+    }
+    return printf(desc, untypedObj);
+  }
+  return combined;
+};
+/*
 const caseName = <T>(each: T): string => {
   if ((each as any).desc) {
     return (each as any).desc;
@@ -46,7 +67,7 @@ const caseName = <T>(each: T): string => {
         : JSON.stringify(each),
     )
     .join(' ');
-};
+};*/
 
 const runSuite = (
   suiteRunner: SuiteRunner,
@@ -76,6 +97,7 @@ export const tree = (levels: any[][]): Node => {
         cases.forEach((p) => {
           node.tests.push({
             name: getName(p),
+            desc: p.desc || getName(p),
             data: { ...node.previousData, ...p },
           });
         });
@@ -118,6 +140,13 @@ export type Env = {
   testRunner: TestRunner;
 };
 
+type WithDesc = { desc?: string };
+type InputCaseType<T> = T & WithDesc;
+type DescFunc<T> = (k: T) => string;
+type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
+
+type FullInputCaseType<T> = InputCaseType<T> | WithComplexDesc<T>;
+
 export class TestInt<T = {}> {
   private groups: T[][] = [];
   private desc: string | undefined = '';
@@ -130,8 +159,9 @@ export class TestInt<T = {}> {
 
   // todo: ability to use t=> [] or []
   // todo: case formatting name sprintf
-  each<K>(cases: K[]): TestInt<T & K> {
+  each<K>(cases: FullInputCaseType<K>[]): TestInt<T & K> {
     this.groups.push(cases as any);
+    //cases.forEach(p=>p.desc)
     return this as any;
   }
 
