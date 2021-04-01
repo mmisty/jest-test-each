@@ -34,8 +34,8 @@ describe('Test jest test each', () => {
           () => expect(result.suites).toEqual([rootName]),
           () =>
             expect(result.tests).toEqual([
-              `${num(1)}something:a`,
-              `${num(2)}something:ab`,
+              `${num(1)}something: a`,
+              `${num(2)}something: ab`,
             ]),
         );
       });
@@ -56,12 +56,12 @@ describe('Test jest test each', () => {
         assertAll(() =>
           expect(result.suites).toEqual([
             'Test pack - root',
-            `${num(1)}something:a`,
-            `${num(1)}foo:a`,
-            `${num(2)}foo:ab`,
-            `${num(2)}something:ab`,
-            `${num(1)}foo:a`,
-            `${num(2)}foo:ab`,
+            `${num(1)}something: a`,
+            `${num(1)}foo: a`,
+            `${num(2)}foo: ab`,
+            `${num(2)}something: ab`,
+            `${num(1)}foo: a`,
+            `${num(2)}foo: ab`,
           ]),
         );
       });
@@ -81,12 +81,12 @@ describe('Test jest test each', () => {
       () => expect(result.passes.length).toBe(1),
       () => expect(result.failures.length).toBe(1),
       () => expect(result.totalEntities).toBe(3),
-      () => expect(result.failures[0].name).toBe('something:a'),
+      () => expect(result.failures[0].name).toBe('something: a'),
       () => expect(result.failures[0].message).toMatch('Expected: "ab"'),
       () => expect(result.failures[0].message).toContain('Received: "a"'),
-      () => expect(result.passes[0].name).toBe('something:ab'),
+      () => expect(result.passes[0].name).toBe('something: ab'),
       () => expect(result.suites).toEqual([rootName]),
-      () => expect(result.tests).toEqual(['something:a', 'something:ab']),
+      () => expect(result.tests).toEqual(['something: a', 'something: ab']),
     );
   });
 
@@ -110,11 +110,11 @@ describe('Test jest test each', () => {
       () =>
         expect(result.suites).toEqual([
           rootName,
-          '1. something1:a',
-          '1. something2:b',
+          '1. something1: a',
+          '1. something2: b',
         ]),
-      () => expect(result.tests).toEqual(['1. something3:c']),
-      () => expect(result.passes[0].name).toBe('1. something3:c'),
+      () => expect(result.tests).toEqual(['1. something3: c']),
+      () => expect(result.passes[0].name).toBe('1. something3: c'),
     );
   });
 
@@ -138,11 +138,11 @@ describe('Test jest test each', () => {
       () =>
         expect(result.suites).toEqual([
           rootName,
-          '1. something1:a',
-          '1. something2:b',
+          '1. something1: a',
+          '1. something2: b',
         ]),
-      () => expect(result.tests).toEqual(['1. something3:c']),
-      () => expect(result.passes[0].name).toBe('1. something3:c'),
+      () => expect(result.tests).toEqual(['1. something3: c']),
+      () => expect(result.passes[0].name).toBe('1. something3: c'),
     );
   });
 });
