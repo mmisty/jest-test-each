@@ -32,8 +32,8 @@ const getName = <T>(obj: T) => {
   const flatDesc = untypedObj.flatDesc;
   const combined = () =>
     Object.getOwnPropertyNames(obj)
-      .filter((p) => p !== 'desc')
-      .map((p) => {
+      .filter(p => p !== 'desc')
+      .map(p => {
         if (Array.isArray(untypedObj[p])) {
           return `${p}:[${untypedObj[p]}]`;
         }
@@ -46,14 +46,10 @@ const getName = <T>(obj: T) => {
       })
       .join(',');
 
-  return flatDesc || (desc ? (typeof desc === 'function' ? desc(obj) : desc) : combined()) ;
+  return flatDesc || (desc ? (typeof desc === 'function' ? desc(obj) : desc) : combined());
 };
 
-const runSuite = (
-  suiteRunner: SuiteRunner,
-  callback: () => void,
-  suiteName?: string,
-) => {
+const runSuite = (suiteRunner: SuiteRunner, callback: () => void, suiteName?: string) => {
   if (suiteName) {
     suiteRunner(suiteName, () => {
       callback();
@@ -71,8 +67,7 @@ export const tree = <T = {}>(levels: T[][]): Node<T> => {
       if (nextLevel !== levelNum) {
         continue;
       }
-      const newCases =
-        typeof cases === 'function' ? (cases as any)(node.previousData) : cases;
+      const newCases = typeof cases === 'function' ? (cases as any)(node.previousData) : cases;
 
       if (levelNum === levels.length - 1) {
         // last level
@@ -124,13 +119,13 @@ export type Env = {
   testRunner: TestRunner;
 };
 
-type WithDesc = { desc?: string,};
+type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
 
 type InputCaseType<T> = T & WithDesc & WithFlatDesc; // WithDesc => should have field in type for further union
 
-type SimpleCase<T> = (InputCaseType<T> | WithComplexDesc<T>);
-type FuncCase<T, TOut> = (t: T ) => SimpleCase<TOut[]>; // todo
+type SimpleCase<T> = InputCaseType<T> | WithComplexDesc<T>;
+type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo
 
 type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
 
@@ -162,23 +157,24 @@ export class TestEach<Combined = {}> {
       return `${isNumberedTestAndSuite ? num + '. ' : ''}${name}`;
     };
 
-    const runCase = <T>(body: (each: T) => void) => (
-      t: OneTest<T>,
-      i: number,
-    ) => {
+    const runCase = <T>(body: (each: T) => void) => (t: OneTest<T>, i: number) => {
       guard(!!t.name, 'Test should have name (empty group of cases)');
       const name = entityName(i + 1, t.name);
       this.env.testRunner(name, () => body(t.data)); // todo;
     };
 
     const allCases: OneTest<Combined>[] = [];
-    treeWalk(root, undefined, (t) => {
-      allCases.push({ ...t, name: getName(t.data), flatDesc: (t.data as SimpleCase<Combined>).flatDesc });
+    treeWalk(root, undefined, t => {
+      allCases.push({
+        ...t,
+        name: getName(t.data),
+        flatDesc: (t.data as SimpleCase<Combined>).flatDesc,
+      });
     });
-    const isFlat = allCases.every(p=>p.flatDesc);
+    const isFlat = allCases.every(p => p.flatDesc);
 
     guard(
-      allCases.every((t) => t.name),
+      allCases.every(t => t.name),
       'Every case in .each should have not empty data',
     );
 
@@ -193,11 +189,7 @@ export class TestEach<Combined = {}> {
 
     const runFlat = () => allCases.forEach(runCase(body));
 
-    return runSuite(
-      this.env.suiteRunner,
-      isGroupBySuites && !isFlat ? run : runFlat,
-      this.desc,
-    );
+    return runSuite(this.env.suiteRunner, isGroupBySuites && !isFlat ? run : runFlat, this.desc);
   }
 }
 
@@ -212,13 +204,23 @@ export const TestEachSetup = (config: Partial<TestSetupType>) => {
   testConfig = { ...testConfigDefault, ...config };
 };
 
-export const Test = (desc?: string) =>
-  new TestEach(desc, {
-    suiteRunner: describe,
-    testRunner: it,
-  });
+//  jest test each  jte
 
 export type TestSetupType = {
   numericCases: boolean;
   groupBySuites: boolean;
 };
+
+declare global {
+  export const its: (desc?: string) => TestEach;
+  export const Test: (desc?: string) => TestEach;
+}
+const createTest = (desc?: string) => {
+  return new TestEach(desc, {
+    suiteRunner: describe,
+    testRunner: it,
+  });
+};
+
+(global as any).its = createTest;
+(global as any).Test = createTest;
