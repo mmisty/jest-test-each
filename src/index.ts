@@ -1,28 +1,26 @@
 import { guard } from './utils/utils';
-const printf = require('printf');
-
-export type casesType<T = {}> = T[];
 
 type OneTest<T> = {
   name: string;
   desc: string | ((k: OneTest<T>) => string);
+  flatDesc?: string;
   data: T;
 };
 
-type Node = {
+type Node<T> = {
   name: string;
-  children: Node[];
-  data: any;
-  previousData: any;
-  tests: OneTest<any>[];
+  children: Node<T>[]; //todo
+  data: T | {};
+  previousData: T;
+  tests: OneTest<T>[];
 };
 
-const createNode = <T>(obj: T, parent?: Node): Node => {
+const createNode = <T>(obj: T, parent?: Node<T>): Node<T> => {
   //const objData = typeof obj === 'string' ? {} :obj;
   return {
     name: getName(obj),
     children: [],
-    data: obj ?? {},
+    data: obj || {},
     previousData: { ...parent?.previousData, ...obj },
     tests: [],
   };
@@ -31,49 +29,30 @@ const createNode = <T>(obj: T, parent?: Node): Node => {
 const getName = <T>(obj: T) => {
   const untypedObj = obj as any;
   const desc = untypedObj.desc;
-  const props = Object.getOwnPropertyNames(obj).filter((p) => p !== 'desc');
-  const combined = props
-    .map((p) => {
-      if (Array.isArray(untypedObj[p])) {
-        return `${p}:[${untypedObj[p]}]`;
-      }
+  const flatDesc = untypedObj.flatDesc;
+  const combined = () =>
+    Object.getOwnPropertyNames(obj)
+      .filter((p) => p !== 'desc')
+      .map((p) => {
+        if (Array.isArray(untypedObj[p])) {
+          return `${p}:[${untypedObj[p]}]`;
+        }
 
-      if (typeof untypedObj[p] === 'object') {
-        return `${p}:${JSON.stringify(untypedObj[p])}`;
-      }
+        if (typeof untypedObj[p] === 'object') {
+          return `${p}:${JSON.stringify(untypedObj[p])}`;
+        }
 
-      return `${p}:${untypedObj[p]}`;
-    })
-    .join(',');
+        return `${p}:${untypedObj[p]}`;
+      })
+      .join(',');
 
-  if (desc) {
-    if (typeof desc === 'function') {
-      return desc(obj);
-    }
-    return printf(desc, untypedObj);
-  }
-  return combined;
+  return flatDesc || (desc ? (typeof desc === 'function' ? desc(obj) : desc) : combined()) ;
 };
-/*
-const caseName = <T>(each: T): string => {
-  if ((each as any).desc) {
-    return (each as any).desc;
-  }
-  const keys = Object.keys(each);
-  return keys
-    .map((k: string) =>
-      typeof (each as any)[k] === 'string'
-        ? (each as any)[k]
-        : JSON.stringify(each),
-    )
-    .join(' ');
-};*/
 
 const runSuite = (
   suiteRunner: SuiteRunner,
   callback: () => void,
   suiteName?: string,
-  
 ) => {
   if (suiteName) {
     suiteRunner(suiteName, () => {
@@ -84,10 +63,10 @@ const runSuite = (
   callback();
 };
 
-export const tree = (levels: any[][]): Node => {
+export const tree = <T = {}>(levels: T[][]): Node<T> => {
   const root = createNode({});
 
-  const populateNodes = (node: Node, nextLevel: number = 0) => {
+  const populateNodes = <K>(node: Node<K>, nextLevel: number = 0) => {
     for (const [levelNum, cases] of levels.entries()) {
       if (nextLevel !== levelNum) {
         continue;
@@ -98,10 +77,10 @@ export const tree = (levels: any[][]): Node => {
       if (levelNum === levels.length - 1) {
         // last level
 
-        newCases.forEach((p: any) => {
+        newCases.forEach((p: T) => {
           node.tests.push({
             name: getName(p),
-            desc: p.desc || getName(p),
+            desc: (p as any).desc || getName(p),
             data: { ...node.previousData, ...p },
           });
         });
@@ -117,13 +96,13 @@ export const tree = (levels: any[][]): Node => {
   };
 
   populateNodes(root);
-  return root;
+  return (root as any) as Node<T>;
 };
 
-const treeWalk = (
-  node: Node,
-  onEachNode: ((c: Node, i: number, inside: () => void) => void) | undefined,
-  onEachTest: (t: OneTest<any>, i: number) => void,
+const treeWalk = <T>(
+  node: Node<T>,
+  onEachNode: ((c: Node<T>, i: number, inside: () => void) => void) | undefined,
+  onEachTest: (t: OneTest<T>, i: number) => void,
 ) => {
   node.children.forEach((c, i) => {
     if (onEachNode) {
@@ -136,6 +115,7 @@ const treeWalk = (
     onEachTest(t, i);
   });
 };
+
 export type SuiteRunner = (name: string, body: () => void) => void;
 export type TestRunner = (name: string, body: () => void) => void;
 
@@ -144,22 +124,21 @@ export type Env = {
   testRunner: TestRunner;
 };
 
-type WithDesc = { desc?: string };
+type WithDesc = { desc?: string,};
+type WithFlatDesc = { flatDesc?: string };
 
-type InputCaseType<T> = T & WithDesc; // WithDesc => should have field in type for further union
+type InputCaseType<T> = T & WithDesc & WithFlatDesc; // WithDesc => should have field in type for further union
 
-type SimpleCase<T> = InputCaseType<T> | WithComplexDesc<T>;
-type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo
+type SimpleCase<T> = (InputCaseType<T> | WithComplexDesc<T>);
+type FuncCase<T, TOut> = (t: T ) => SimpleCase<TOut[]>; // todo
 
 type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
 
 type DescFunc<T> = (k: T) => string;
-type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
+type WithComplexDesc<T> = { desc?: string | DescFunc<T> } & WithFlatDesc;
 
-//type FullInputCaseType<T, TOut> = Input<T, TOut> | WithComplexDesc<TOut>;
-
-export class TestEach<T = {}> {
-  private groups: T[][] = [];
+export class TestEach<Combined = {}> {
+  private groups: Combined[][] = [];
   private desc: string | undefined = '';
   private config: TestSetupType;
 
@@ -167,15 +146,14 @@ export class TestEach<T = {}> {
     this.desc = desc;
     this.config = testConfig;
   }
-  
+
   // todo: defect addition
-  each<TOut>(cases: Input<T, TOut>): TestEach<T & TOut> {
+  each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut> {
     this.groups.push(cases as any);
-    //cases.forEach(p=>p.desc)
     return this as any;
   }
 
-  run(body: (each: T) => void) {
+  run(body: (each: Combined) => void) {
     const isNumberedTestAndSuite = this.config.numericCases;
     const isGroupBySuites = this.config.groupBySuites;
     const root = tree(this.groups);
@@ -193,10 +171,11 @@ export class TestEach<T = {}> {
       this.env.testRunner(name, () => body(t.data)); // todo;
     };
 
-    const allCases: OneTest<T>[] = [];
+    const allCases: OneTest<Combined>[] = [];
     treeWalk(root, undefined, (t) => {
-      allCases.push({ ...t, name: getName(t.data) });
+      allCases.push({ ...t, name: getName(t.data), flatDesc: (t.data as SimpleCase<Combined>).flatDesc });
     });
+    const isFlat = allCases.every(p=>p.flatDesc);
 
     guard(
       allCases.every((t) => t.name),
@@ -216,7 +195,7 @@ export class TestEach<T = {}> {
 
     return runSuite(
       this.env.suiteRunner,
-      isGroupBySuites ? run : runFlat,
+      isGroupBySuites && !isFlat ? run : runFlat,
       this.desc,
     );
   }

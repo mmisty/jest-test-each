@@ -18,15 +18,14 @@ describe('simple-suite', () => {
         { addition: 'milk=' + t.abc },
         { addition: 'ice-cream=' + t.abc },
       ])
-      .each((t) => [{ ggg: 'milk=' + t.abc }])
-      .each((t) => [
+       .each((t) => [
         {
           desc: 'some desc:' + t.addition,
           fruits: ['banana', 'orange'],
           vegs: ['tomato'],
         },
         {
-          desc: (k) => `fruits should not have [${k.vegs}, ${t.ggg}]`,
+          desc: (k) => `fruits should not have [${k.vegs}, ${t.abc}]`,
           fruits: ['banana', 'orange'],
           vegs: ['tomato'],
         },
@@ -35,7 +34,37 @@ describe('simple-suite', () => {
           vegs: ['orange'],
         },
       ])
-      .each((t) => [{ k: 'd' + t.vegs }])
+      .each((t) => [{ de: 'd' }])
+      .run(async (t) => {
+        console.log(`${t.fruits} ${t.addition}`);
+        expect(t.fruits.length).toBeGreaterThan(0);
+      });
+  });
+  
+describe('test 3 flat', () => {
+    Test()
+      .each([{ abc: 'abc' }, { abc: 'def' }])
+      .each((t) => [
+        { addition: 'milk=' + t.abc },
+        { addition: 'ice-cream=' + t.abc },
+      ])
+       .each((t) => [
+        {
+          desc: 'some desc:' + t.addition,
+          fruits: ['banana', 'orange'],
+          vegs: ['tomato'],
+        },
+        {
+          desc: (k) => `fruits should not have [${k.vegs}, ${t.abc}]`,
+          fruits: ['banana', 'orange'],
+          vegs: ['tomato'],
+        },
+        {
+          fruits: ['pineapple', 'apple', 'orange'],
+          vegs: ['orange'],
+        },
+      ])
+      .each((t) => [{ descCase: `should be ${t.abc} and ${t.addition}` }])
       .run(async (t) => {
         console.log(`${t.fruits} ${t.addition}`);
         expect(t.fruits.length).toBeGreaterThan(0);
@@ -49,25 +78,8 @@ describe('simple-suite', () => {
         expect(1).toBe(1);
       });
   });
+  
+  
+  Test('')
 
-  it('sdsd', () => {
-    const printf = require('printf');
-
-    const cases = [
-      {
-        desc: (k) => printf('complex case %s %a', k.fruits),
-        fruits: ['banana', 'orange'],
-        vegs: ['tomato'],
-      },
-      {
-        desc: (k) => `${k.fruits[0]}`,
-        fruits: ['banana', 'orange'],
-        vegs: ['tomato'],
-      },
-    ];
-
-    cases.forEach((k) => {
-      console.log(k.desc(k));
-    });
-  });
 });
