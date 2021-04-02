@@ -6,7 +6,7 @@ This package will help you to run parametrised tests easily [typesafe] without t
 ![](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
 [![GitHub watchers](https://img.shields.io/github/watchers/mmisty/jest-test-each.svg?style=social)](https://github.com/mmisty/jest-test-each/watchers)
 
-### Table of Contents
+## Table of Contents
 
 1. [Examples](#examples)
 2. [Setup](#setup)
@@ -14,9 +14,9 @@ This package will help you to run parametrised tests easily [typesafe] without t
    - [Missing features](#missing-features)
 4. [What's next](#whats-next)
 
-### Examples
+## Examples
 
-#### Simple
+### Simple
 
 ```typescript
 its('roundings')
@@ -35,7 +35,7 @@ Run test in idea with jest plugin:
 
 ![](./docs/roundings.png)
 
-#### More complex
+### More complex
 
 ```typescript
 its('check calculator')
@@ -61,7 +61,7 @@ and the same test with auto cases names:
 
 ![](./docs/calc2.png)
 
-### Setup
+## Setup
 
 Install dev dependency:
 
@@ -87,7 +87,7 @@ for .ts tests to see globals 'its' and 'Test' add the following to your tsconfig
   ]
 ```
 
-### Features
+## Features
 
 1. cases multiplication (`.each().each()....run()`)
 2. ability to setup test-each:
@@ -98,18 +98,13 @@ for .ts tests to see globals 'its' and 'Test' add the following to your tsconfig
 5. ability to have flat tests cases (not groupped) when each case has 'flatDesc'
 6. global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
 
-#### Missing features
+### Missing features
 
 1. To run one test from TestEach like it.only (**workaround**: commenting cases/filtering)
 2. To start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
 
-### What's is next
+## What's is next
 
 - [ ] add '.before' to testEach with disposable interface for automatic cleanup
 - [ ] do not create suite wrapping when only one test in the group
 - [ ] ability to run without single .each (`its().run(..)`)
-
-## Contributors
-
-| [<img src="https://avatars0.githubusercontent.com/u/16957275?s=400&v=4" width="100px;"/><br/><sub><b>Taisia Pitko</b></sub>](https://github.com/mmisty) |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- |
