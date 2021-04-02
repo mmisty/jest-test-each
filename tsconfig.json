@@ -13,5 +13,6 @@
     "typeRoots": ["node_modules/@types"]
   },
   "include": ["src"],
-  "exclude": ["config", "_examples", "_tests", "docs"]
+  "exclude": ["config",
+    "_test-examples", "_tests", "docs"]
 }

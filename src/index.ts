@@ -1,4 +1,4 @@
-import { createTest } from './test-each';
+import { createTest,TestEachFunc } from './test-each';
 
 export type Runner = (name: string, body: () => void) => void;
 
@@ -15,5 +15,5 @@ declare global {
 (global as any).Test = createTest;
 (global as any).its = createTest;
 
-import { TestEachSetup, TestEach, TestEachFunc } from './test-each';
-export { TestEachSetup, TestEach, TestEachFunc };
+import { TestEachSetup, TestEach } from './test-each';
+export { TestEachSetup, TestEach };
