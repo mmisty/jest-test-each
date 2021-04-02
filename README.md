@@ -2,6 +2,10 @@
 
 This package will help you to run parametrised tests easily [typesafe] without text tables or arrays of arrays.
 
+![](https://img.shields.io/badge/License-MIT-yellow.svg)
+![](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
+[![GitHub watchers](https://img.shields.io/github/watchers/mmisty/jest-test-each.svg?style=social)](https://github.com/mmisty/jest-test-each/watchers)
+
 ### Table of Contents
 
 1. [Examples](#examples)
@@ -70,6 +74,7 @@ Add the following into your setupFilesAfterEnv config jest.setup.js file:
 ```
 require('jest-test-each');
 ```
+
 Looking a way to improve this. Can anyone help ?)
 
 for .ts tests to see globals 'its' and 'Test' add the following to your tsconfig:
@@ -93,13 +98,18 @@ for .ts tests to see globals 'its' and 'Test' add the following to your tsconfig
 5. ability to have flat tests cases (not groupped) when each case has 'flatDesc'
 6. global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
 
-## Missing features
+#### Missing features
 
 1. To run one test from TestEach like it.only (**workaround**: commenting cases/filtering)
-2. To start testEach by Idea plugin (**workaround**\_: wrap with describe and do not put name into Test Each)
+2. To start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
 
 ### What's is next
 
-- [ ] add '.before' to testEach with disposable interface
+- [ ] add '.before' to testEach with disposable interface for automatic cleanup
 - [ ] do not create suite wrapping when only one test in the group
-- [ ] ability to run without single .each (``its().run(..)``)
+- [ ] ability to run without single .each (`its().run(..)`)
+
+## Contributors
+
+| [<img src="https://avatars0.githubusercontent.com/u/16957275?s=400&v=4" width="100px;"/><br/><sub><b>Taisia Pitko</b></sub>](https://github.com/mmisty) |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- |
