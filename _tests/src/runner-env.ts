@@ -1,9 +1,9 @@
-import { Env, SuiteRunner, TestEach, TestRunner } from '../../src';
+import { Env, SuiteRunner, TestRunner } from '../../src';
+import { TestEach } from '../../src/test-each';
 
 const stripAnsi = require('strip-ansi');
 
-export const TestEachTesting = (env: Env) => (desc?: string) =>
-  new TestEach(desc, env);
+export const TestEachTesting = (env: Env) => (desc?: string) => new TestEach(desc, env);
 
 type ResultType = {
   failures: Failure[];

@@ -1,4 +1,4 @@
-import { tree } from '../../../src';
+import { createTree } from '../../../src/tree';
 
 describe('units', function () {
   it('check tree', () => {
@@ -8,7 +8,7 @@ describe('units', function () {
       [{ hij: 1 }, { hij: 3 }],
     ];
 
-    const root = tree(data);
+    const root = createTree(data);
     let result = [];
     const byTree = (node: any, level: number) => {
       result.push(' '.repeat(level * 2) + 'suite:' + node.name);
