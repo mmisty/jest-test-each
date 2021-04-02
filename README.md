@@ -2,6 +2,8 @@
 
 This package will help you to run parametrised tests easily [typesafe] without text tables or arrays of arrays.
 
+Test environment can be overridden (by default it is jest)
+
 ![](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
 [![GitHub watchers](https://img.shields.io/github/watchers/mmisty/jest-test-each.svg?style=social)](https://github.com/mmisty/jest-test-each/watchers)
@@ -110,6 +112,7 @@ TestEachEnv({
 - [x] ability to create .each level depending on previous
 - [x] ability to have flat tests cases (not groupped) when each case has 'flatDesc'
 - [x] global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
+- [x] ability to run without single .each (`its('foo').run(..)`)
 - [ ] To run one test from TestEach like it.only (**workaround**: commenting cases/filtering)
 - [ ] To start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
 
@@ -117,4 +120,4 @@ TestEachEnv({
 
 - [ ] add '.before' to testEach with disposable interface for automatic cleanup
 - [ ] do not create suite wrapping when only one test in the group
-- [ ] ability to run without single .each (`its().run(..)`)
+- [ ] add ability to skip test if it maked by defect

@@ -45,6 +45,12 @@ export class TestEach<Combined = {}> {
   }
 
   run(body: (each: Combined) => void) {
+    if (this.groups.length === 0) {
+      guard(!!this.desc, 'Test should have name when no cases');
+      this.env.testRunner(this.desc!, () => body({} as any));
+      return;
+    }
+
     const { numericCases, groupBySuites } = this.conf;
     const root = createTree(this.groups);
 
