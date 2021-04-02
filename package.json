@@ -1,6 +1,6 @@
 {
   "name": "jest-test-each",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "template for creating new package",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -28,8 +28,6 @@
   },
   "dependencies": {
     "@types/node": "~14.14.37",
-    "@types/printf": "^0.3.1",
-    "jest": "^26.6.3",
-    "printf": "^0.6.1"
+    "jest": "^26.6.3"
   }
 }
