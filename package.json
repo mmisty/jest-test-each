@@ -1,6 +1,6 @@
 {
   "name": "jest-test-each",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "template for creating new package",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
