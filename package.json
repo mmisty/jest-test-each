@@ -1,10 +1,13 @@
 {
   "name": "jest-test-each",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "run parametrised tests easily [typesafe] without text tables or arrays of arrays.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "repository": "git@github.com:mmisty/jest-test-each.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mmisty/jest-test-each"
+  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
