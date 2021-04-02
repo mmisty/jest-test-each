@@ -49,12 +49,12 @@ type WithComplexDesc<T> = { desc?: string | DescFunc<T> } & WithFlatDesc;
 export class TestEach<Combined = {}> {
   private groups: Combined[][] = [];
   private desc: string | undefined = '';
-  private config: TestSetupType;
+  private conf: TestSetupType;
   private env: Env;
 
   constructor(desc: string | undefined) {
     this.desc = desc;
-    this.config = testConfig;
+    this.conf = testConfig;
 
     if (!testEnv.env) {
       throw new Error('Please specify test env (jest/mocha) like: ');
@@ -63,6 +63,10 @@ export class TestEach<Combined = {}> {
     this.env = testEnv.env;
   }
 
+  config(config: Partial<TestSetupType>): TestEach<Combined> {
+    this.conf = { ...testConfigDefault, ...config };
+    return this;
+  }
   // todo: defect addition
   each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut> {
     this.groups.push(cases as any);
@@ -70,12 +74,11 @@ export class TestEach<Combined = {}> {
   }
 
   run(body: (each: Combined) => void) {
-    const isNumberedTestAndSuite = this.config.numericCases;
-    const isGroupBySuites = this.config.groupBySuites;
+    const { numericCases, groupBySuites } = this.conf;
     const root = createTree(this.groups);
 
     const entityName = (num: number, name: string) => {
-      return `${isNumberedTestAndSuite ? num + '. ' : ''}${name}`;
+      return `${numericCases ? num + '. ' : ''}${name}`;
     };
 
     const runCase = <T>(body: (each: T) => void) => (t: OneTest<T>, i: number) => {
@@ -111,7 +114,7 @@ export class TestEach<Combined = {}> {
 
     const runFlat = () => allCases.forEach(runCase(body));
 
-    return runSuite(this.env.suiteRunner, isGroupBySuites && !isFlat ? run : runFlat, this.desc);
+    return runSuite(this.env.suiteRunner, groupBySuites && !isFlat ? run : runFlat, this.desc);
   }
 }
 
