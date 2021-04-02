@@ -1,5 +1,4 @@
-import { Env, SuiteRunner, TestRunner } from '../../src';
-import { TestEach } from '../../src/test-each';
+import { Env, Runner, TestEach } from '../../src';
 
 const stripAnsi = require('strip-ansi');
 
@@ -40,14 +39,14 @@ type Failure = {
   message: string;
 };
 
-const suiteRunner: SuiteRunner = (name: string, body: () => void) => {
+const suiteRunner: Runner = (name: string, body: () => void) => {
   // console.log('Suite started: ' + name);
   result.totalEntities++;
   result.suites.push(name);
   body();
 };
 
-const testRunner: TestRunner = async (name: string, body: () => void) => {
+const testRunner: Runner = async (name: string, body: () => void) => {
   // console.log('Test started: ' + name);
   let wasError = false;
   result.totalEntities++;
