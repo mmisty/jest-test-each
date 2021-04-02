@@ -1,15 +1,14 @@
 # jest-test-each
 
-Will help you to run parametrized tests easily [typesafe] without text tables or arrays of arrays.
+This package will help you to run parametrised tests easily [typesafe] without text tables or arrays of arrays.
 
-### Features:
+### Table of Contents
 
-1. cases multiplication
-2. ability to setup test-each: number cases or not, group each level by suite or not
-3. ability to specify description for each case as func depending on case args
-4. ability to create .each level depending on previous levels
-5. ability to not group by suites when each case has 'flatDesc'
-6. global var 'Test' (or 'its' alias) to access test each (accepting suggestions on naming)
+1. [Examples](#examples)
+2. [Setup](#setup)
+3. [Features](#features)
+   - [Missing features](#missing-features)
+4. [What's next](#whats-next)
 
 ### Examples
 
@@ -58,7 +57,49 @@ and the same test with auto cases names:
 
 ![](./docs/calc2.png)
 
-## Unavailable:
+### Setup
 
-1. To run one test from TestEach (workaround - commenting cases/filtering)
-2. To start testEach by Idea plugin (workaround - wrap with describe and do not put name into Test Each)
+Install dev dependency:
+
+```
+yarn add -D jest-test-each
+```
+
+Add the following into your setupFilesAfterEnv config jest.setup.js file:
+
+```
+require('jest-test-each');
+```
+Looking a way to improve this. Can anyone help ?)
+
+for .ts tests to see globals 'its' and 'Test' add the following to your tsconfig:
+
+```
+// tsconfig.json
+ "include": [
+    ...
+    "node_modules/jest-test-each/dist/index.d.ts"
+  ]
+```
+
+### Features
+
+1. cases multiplication (`.each().each()....run()`)
+2. ability to setup test-each:
+   - number cases or not
+   - group each level by suite or not
+3. ability to specify description for each case as function depending on case args
+4. ability to create .each level depending on previous
+5. ability to have flat tests cases (not groupped) when each case has 'flatDesc'
+6. global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
+
+## Missing features
+
+1. To run one test from TestEach like it.only (**workaround**: commenting cases/filtering)
+2. To start testEach by Idea plugin (**workaround**\_: wrap with describe and do not put name into Test Each)
+
+### What's is next
+
+- [ ] add '.before' to testEach with disposable interface
+- [ ] do not create suite wrapping when only one test in the group
+- [ ] ability to run without single .each (``its().run(..)``)

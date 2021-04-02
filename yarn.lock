@@ -584,13 +584,6 @@
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.2.3.tgz#ef65165aea2924c9359205bf748865b8881753c0"
   integrity sha512-PijRCG/K3s3w1We6ynUKdxEc5AcuuH3NBmMDP8uvKVp6X43UY7NQlTzczakXP3DJR0F4dfNQIGjU2cUeRYs2AA==
 
-"@types/printf@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@types/printf/-/printf-0.3.1.tgz#9af37cdab434849193e992bc3a7db1b08263d17f"
-  integrity sha512-DFBOKnN3GG+NvYaFQFdjmESk0Zj0OL+iJ7Xc0bP+DRMrLNatOXqjMacxtOd7ieFiOQKBq/LvAeO14t7f38h5aA==
-  dependencies:
-    printf "*"
-
 "@types/stack-utils@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
@@ -2858,11 +2851,6 @@ pretty-quick@~3.1.0:
     ignore "^5.1.4"
     mri "^1.1.5"
     multimatch "^4.0.0"
-
-printf@*, printf@^0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/printf/-/printf-0.6.1.tgz#b9afa3d3b55b7f2e8b1715272479fc756ed88650"
-  integrity sha512-is0ctgGdPJ5951KulgfzvHGwJtZ5ck8l042vRkV6jrkpBzTmb/lueTqguWHy2JfVA+RY6gFVlaZgUS0j7S/dsw==
 
 prompts@^2.0.1:
   version "2.4.0"

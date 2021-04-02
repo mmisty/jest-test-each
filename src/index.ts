@@ -205,17 +205,11 @@ export const TestEachSetup = (config: Partial<TestSetupType>) => {
   testConfig = { ...testConfigDefault, ...config };
 };
 
-//  jest test each  jte
-
 export type TestSetupType = {
   numericCases: boolean;
   groupBySuites: boolean;
 };
 
-declare global {
-  export const its: (desc?: string) => TestEach;
-  export const Test: (desc?: string) => TestEach;
-}
 const createTest = (desc?: string) => {
   return new TestEach(desc, {
     suiteRunner: describe,
@@ -223,5 +217,12 @@ const createTest = (desc?: string) => {
   });
 };
 
-(global as any).its = createTest;
+type TestEachFunc = (desc?: string) => TestEach;
+
+declare global {
+  export const its: TestEachFunc;
+  export const Test: TestEachFunc;
+}
+
 (global as any).Test = createTest;
+(global as any).its = createTest;

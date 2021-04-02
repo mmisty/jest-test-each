@@ -10,7 +10,7 @@ describe('simple-suite', () => {
     });
 
   describe('test 2', () => {
-    Test()
+    its()
       .each([{ abc: 'abc' }, { abc: 'def' }])
       .each(t => [{ addition: 'milk=' + t.abc }, { addition: 'ice-cream=' + t.abc }])
       .each(t => [

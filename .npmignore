@@ -4,7 +4,9 @@ logs
 npm-debug.log*
 
 src
-examples
+_examples/
+_tests/
+docs/
 tsconfig.json
 tslint.json
 .prettierrc
