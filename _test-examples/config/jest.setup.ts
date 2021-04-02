@@ -1,5 +1,5 @@
 import { CustomConsole, LogMessage, LogType } from '@jest/console';
-import { TestEach, TestEachSetup } from '../../src';
+import { TestEachSetup } from '../../src';
 
 export const dateStr = () => {
   const date = new Date(Date.now());
@@ -20,14 +20,10 @@ function simpleFormatter(type: LogType, message: LogMessage): string {
   const date = dateStr();
   return message
     .split(/\n/)
-    .map((line) => type + ' ' + date + CONSOLE_INDENT + line)
+    .map(line => type + ' ' + date + CONSOLE_INDENT + line)
     .join('\n');
 }
 
-global.console = new CustomConsole(
-  process.stdout,
-  process.stderr,
-  simpleFormatter,
-);
+global.console = new CustomConsole(process.stdout, process.stderr, simpleFormatter);
 
 TestEachSetup({ numericCases: true, groupBySuites: true });

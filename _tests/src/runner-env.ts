@@ -1,8 +1,12 @@
-import { Env, Runner, TestEach } from '../../src';
+import { Env, Runner } from '../../src/test-env';
+import { TestEach, TestEachEnv } from '../../src/test-each';
 
 const stripAnsi = require('strip-ansi');
 
-export const TestEachTesting = (env: Env) => (desc?: string) => new TestEach(desc, env);
+export const TestEachTesting = (env: Env) => (desc?: string) => {
+  TestEachEnv(env);
+  return new TestEach(desc);
+};
 
 type ResultType = {
   failures: Failure[];
@@ -68,4 +72,8 @@ const testRunner: Runner = async (name: string, body: () => void) => {
 export const testRunnerEnv: Env = {
   suiteRunner,
   testRunner,
+  beforeEach,
+  beforeAll,
+  afterEach,
+  afterAll,
 };

@@ -1,7 +1,7 @@
 import { guard } from './utils/utils';
-import { Env, Runner } from './index';
 import { OneTest, treeWalk, createTree } from './tree';
 import { getName } from './utils/name';
+import { Env, Runner } from './test-env';
 
 export type TestSetupType = {
   numericCases: boolean;
@@ -13,19 +13,24 @@ const testConfigDefault: TestSetupType = {
   groupBySuites: true,
 };
 
-export const createTest = (desc?: string) => {
-  return new TestEach(desc, {
-    suiteRunner: describe,
-    testRunner: it,
-  });
-};
-
-export type TestEachFunc = (desc?: string) => TestEach;
-
 let testConfig: TestSetupType = testConfigDefault;
 
 export const TestEachSetup = (config: Partial<TestSetupType>) => {
   testConfig = { ...testConfigDefault, ...config };
+};
+
+const testEnv: { env: Env } = {
+  env: {
+    beforeEach,
+    beforeAll,
+    afterAll,
+    afterEach,
+    testRunner: it,
+    suiteRunner: describe,
+  },
+}; // todo may need to setup
+export const TestEachEnv = (env: Env) => {
+  testEnv.env = env;
 };
 
 type WithDesc = { desc?: string };
@@ -45,10 +50,17 @@ export class TestEach<Combined = {}> {
   private groups: Combined[][] = [];
   private desc: string | undefined = '';
   private config: TestSetupType;
+  private env: Env;
 
-  constructor(desc: string | undefined, private env: Env) {
+  constructor(desc: string | undefined) {
     this.desc = desc;
     this.config = testConfig;
+
+    if (!testEnv.env) {
+      throw new Error('Please specify test env (jest/mocha) like: ');
+    }
+
+    this.env = testEnv.env;
   }
 
   // todo: defect addition
