@@ -1,6 +1,6 @@
 import { cleanup, result, TestEachTesting, testRunnerEnv } from '../runner-env';
-import { assertAll } from '../../../_test-utils/utils';
-import { TestEachSetup } from '../../../src';
+import { TestEachSetup } from 'jest-test-each';
+import { assertAll } from '../utils';
 
 const rootName = 'Test pack - root';
 const test = () => TestEachTesting(testRunnerEnv)(rootName);

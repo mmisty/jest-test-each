@@ -1,5 +1,5 @@
-import { Env, Runner } from '../../src/test-env';
-import { TestEach, TestEachEnv } from '../../src/test-each';
+import { TestEach, TestEachEnv } from 'jest-test-each/dist/test-each';
+import { Env, Runner } from 'jest-test-each/dist/test-env';
 
 const stripAnsi = require('strip-ansi');
 
