@@ -1,8 +1,8 @@
 {
   "name": "jest-test-each",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "template for creating new package",
-  "main": "./dist/index",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": "git@github.com:mmisty/jest-test-each.git",
   "publishConfig": {
