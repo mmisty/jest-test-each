@@ -1,4 +1,5 @@
-import { TestEach, TestEachSetup, TestEachEnv } from './test-each';
+import { TestEach } from './test-each';
+import { TestEachSetup, TestEachEnv } from './test-each-setup';
 
 type TestEachFunc = (desc?: string) => TestEach;
 

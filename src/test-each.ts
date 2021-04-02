@@ -2,36 +2,7 @@ import { guard } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
 import { getName } from './utils/name';
 import { Env, Runner } from './test-env';
-
-export type TestSetupType = {
-  numericCases: boolean;
-  groupBySuites: boolean;
-};
-
-const testConfigDefault: TestSetupType = {
-  numericCases: true,
-  groupBySuites: true,
-};
-
-let testConfig: TestSetupType = testConfigDefault;
-
-export const TestEachSetup = (config: Partial<TestSetupType>) => {
-  testConfig = { ...testConfigDefault, ...config };
-};
-
-const testEnv: { env: Env } = {
-  env: {
-    beforeEach,
-    beforeAll,
-    afterAll,
-    afterEach,
-    testRunner: it,
-    suiteRunner: describe,
-  },
-}; // todo may need to setup
-export const TestEachEnv = (env: Env) => {
-  testEnv.env = env;
-};
+import { testConfig, testConfigDefault, testEnv, TestSetupType } from './test-each-setup';
 
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
@@ -54,7 +25,7 @@ export class TestEach<Combined = {}> {
 
   constructor(desc: string | undefined) {
     this.desc = desc;
-    this.conf = testConfig;
+    this.conf = testConfig.config;
 
     if (!testEnv.env) {
       throw new Error('Please specify test env (jest/mocha) like: ');
