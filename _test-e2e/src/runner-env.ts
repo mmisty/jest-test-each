@@ -73,6 +73,7 @@ const testRunner: Runner = async (name: string, body: () => void) => {
 export const testRunnerEnv: Env = {
   suiteRunner,
   testRunner,
+  testRunnerOnly: testRunner, // todo
   beforeEach,
   beforeAll,
   afterEach,

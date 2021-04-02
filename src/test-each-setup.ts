@@ -25,6 +25,7 @@ export const testEnv: { env: Env } = {
     afterAll,
     afterEach,
     testRunner: it,
+    testRunnerOnly: it.only,
     suiteRunner: describe,
   },
 }; // todo may need to setup

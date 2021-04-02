@@ -6,6 +6,7 @@ import { testConfig, testConfigDefault, testEnv, TestSetupType } from './test-ea
 
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
+//type Additions = {only?: boolean}
 
 type InputCaseType<T> = T & WithDesc & WithFlatDesc; // WithDesc => should have field in type for further union
 
@@ -16,12 +17,15 @@ type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
 
 type DescFunc<T> = (k: T) => string;
 type WithComplexDesc<T> = { desc?: string | DescFunc<T> } & WithFlatDesc;
+type OnlyInput<T> = (t: T) => boolean;
 
 export class TestEach<Combined = {}> {
   private groups: Combined[][] = [];
   private desc: string | undefined = '';
   private conf: TestSetupType;
   private env: Env;
+  private onlyOne: boolean = false;
+  private onlyOneFilter: OnlyInput<Combined> | undefined = undefined;
 
   constructor(desc: string | undefined) {
     this.desc = desc;
@@ -34,10 +38,19 @@ export class TestEach<Combined = {}> {
     this.env = testEnv.env;
   }
 
+  only(input?: OnlyInput<Combined>): TestEach<Combined> {
+    this.onlyOne = true;
+    if (input) {
+      this.onlyOneFilter = input;
+    }
+    return this;
+  }
+
   config(config: Partial<TestSetupType>): TestEach<Combined> {
     this.conf = { ...testConfigDefault, ...config };
     return this;
   }
+
   // todo: defect addition
   each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut> {
     this.groups.push(cases as any);
@@ -45,9 +58,28 @@ export class TestEach<Combined = {}> {
   }
 
   run(body: (each: Combined) => void) {
+    if (this.onlyOne) {
+      // todo cleanup
+      if (this.onlyOneFilter) {
+        guard(
+          !this.groups.every(p => p.filter(k => this.onlyOneFilter?.(k)).length === 0),
+          'No such case: ' + this.onlyOneFilter.toString(),
+        );
+
+        this.groups = this.groups.map((p, i) => {
+          const filtered = p.filter(k => this.onlyOneFilter?.(k));
+          return [filtered.length === 0 ? p[0] : filtered[0]];
+        });
+      } else {
+        this.groups = this.groups.map(p => [p[0]]);
+      }
+    }
+
+    const testRunner = this.onlyOne ? this.env.testRunnerOnly : this.env.testRunner;
+
     if (this.groups.length === 0) {
       guard(!!this.desc, 'Test should have name when no cases');
-      this.env.testRunner(this.desc!, () => body({} as any));
+      testRunner(this.desc!, () => body({} as any));
       return;
     }
 
@@ -61,7 +93,7 @@ export class TestEach<Combined = {}> {
     const runCase = <T>(body: (each: T) => void) => (t: OneTest<T>, i: number) => {
       guard(!!t.name, 'Test should have name (empty group of cases)');
       const name = entityName(i + 1, t.name);
-      this.env.testRunner(name, () => body(t.data)); // todo;
+      testRunner(name, () => body(t.data)); // todo;
     };
 
     const allCases: OneTest<Combined>[] = [];
@@ -90,8 +122,22 @@ export class TestEach<Combined = {}> {
       );
 
     const runFlat = () => allCases.forEach(runCase(body));
+    const runCheck = () => {
+      if (this.onlyOne) {
+        this.env.testRunnerOnly('only() should be removed before committing', () => {
+          guard(!this.onlyOne, 'Do not forget to remove .only() from your test before committing');
+        });
+      }
+    };
 
-    return runSuite(this.env.suiteRunner, groupBySuites && !isFlat ? run : runFlat, this.desc);
+    runSuite(
+      this.env.suiteRunner,
+      () => {
+        runCheck();
+        groupBySuites && !isFlat ? run() : runFlat();
+      },
+      this.desc,
+    );
   }
 }
 

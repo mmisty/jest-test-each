@@ -113,11 +113,11 @@ TestEachEnv({
 - [x] ability to have flat tests cases (not groupped) when each case has 'flatDesc'
 - [x] global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
 - [x] ability to run without single .each (`its('foo').run(..)`)
-- [ ] To run one test from TestEach like it.only (**workaround**: commenting cases/filtering)
+- [x] To run one test from TestEach like it.only (`.only(<filter>)`)
 - [ ] To start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
 
 ## What's next
 
 - [ ] add '.before' to testEach with disposable interface for automatic cleanup
 - [ ] do not create suite wrapping when only one test in the group
-- [ ] add ability to skip test if it maked by defect
+- [ ] add ability to skip test if it is marked by defect
