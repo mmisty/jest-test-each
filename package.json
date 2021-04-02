@@ -1,6 +1,6 @@
 {
   "name": "jest-test-each",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "template for creating new package",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,15 +16,18 @@
     "fmt": "pretty-quick"
   },
   "keywords": [
-    "template"
+    "jest",
+    "test",
+    "tests",
+    "each",
+    "parametrised",
+    "testing"
   ],
   "devDependencies": {
     "@types/jest": "^26.0.22",
-    "prettier": "~2.2.1",
-    "pretty-quick": "~3.1.0",
-    "tslib": "~2.1.0",
-    "tsutils": "~3.21.0",
-    "typescript": "~4.2.3"
+    "prettier": "^2.2.1",
+    "pretty-quick": "^3.1.0",
+    "typescript": "^4.2.3"
   },
   "dependencies": {
     "@types/node": "~14.14.37",
