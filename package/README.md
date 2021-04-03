@@ -38,7 +38,6 @@ its('roundings')
 
 Run test in idea with jest plugin:
 
-![](./package/docs/roundings.png)
 ![](https://github.com/mmisty/jest-test-each/blob/main/package/docs/roundings.png)
 
 ### More complex
@@ -61,11 +60,11 @@ its('check calculator')
   });
 ```
 
-![](./package/docs/calc.png)
+![](https://github.com/mmisty/jest-test-each/blob/main/package/docs/calc.png)
 
 and the same test with auto cases names:
 
-![](./package/docs/calc2.png)
+![](https://github.com/mmisty/jest-test-each/blob/main/package/docs/calc2.png)
 
 ## Setup
 
