@@ -1,17 +1,15 @@
 {
   "compilerOptions": {
     "strict": true,
-    "lib": ["es2015"],
     "declaration": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "baseUrl": "./dist",
+    "suppressImplicitAnyIndexErrors": false,
     "target": "es2015",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "module": "commonjs",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src"]
+  "include": ["src", "node_modules/jest-test-each/dist/index.d.ts"]
 }

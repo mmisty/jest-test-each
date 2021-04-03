@@ -70,13 +70,26 @@ export class TestEach<Combined = {}> {
   }
 
   run(body: (each: Combined) => void) {
+    const useConcurrency = this.concurrentTests || this.conf.concurrent;
+
+    const testRunner = this.onlyOne
+      ? this.env.itOnly
+      : useConcurrency
+      ? this.env.itConcurrent
+      : this.env.it;
+
     if (this.onlyOne) {
       // todo cleanup
       if (this.onlyOneFilter) {
-        guard(
-          !this.groups.every(p => p.filter(k => this.onlyOneFilter?.(k)).length === 0),
-          'No such case: ' + this.onlyOneFilter.toString(),
+        const notFound = this.groups.every(
+          p => p.filter(k => this.onlyOneFilter?.(k)).length === 0,
         );
+        if (notFound) {
+          testRunner('Only one search failed', () => {
+            throw new Error('No such case: ' + this.onlyOneFilter!.toString());
+          });
+          return;
+        }
 
         this.groups = this.groups.map((p, i) => {
           const filtered = p.filter(k => this.onlyOneFilter?.(k));
@@ -86,13 +99,6 @@ export class TestEach<Combined = {}> {
         this.groups = this.groups.map(p => [p[0]]);
       }
     }
-    const useConcurrency = this.concurrentTests || this.conf.concurrent;
-
-    const testRunner = this.onlyOne
-      ? this.env.itOnly
-      : useConcurrency
-      ? this.env.itConcurrent
-      : this.env.it;
 
     if (this.groups.length === 0) {
       guard(!!this.desc, 'Test should have name when no cases');

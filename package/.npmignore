@@ -4,10 +4,12 @@ logs
 npm-debug.log*
 
 src
-_test*/
 docs/
+tests/
+config/
 
 tsconfig.json
+jest.config.json
 tslint.json
 .prettierrc
 index.ts

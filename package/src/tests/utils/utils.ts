@@ -25,3 +25,15 @@ export const assertAll = (...assertions: (() => void)[]) => {
     throw error;
   }
 };
+
+export async function delay(ms: number, ...messages: string[]) {
+  console.log(...messages, messages.length > 0 ? ':' : '', `DELAY ${ms.toString()} ms`);
+  await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function success() {
+  expect(1).toBe(1);
+}
+export function fail() {
+  expect(1).toBe(0);
+}
