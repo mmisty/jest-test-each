@@ -60,7 +60,7 @@ its('check calculator')
   });
 ```
 
-![](https://github.com/mmisty/jest-test-each/tree/main/package/docs/calc.png)
+![](./package/docs/roundings.png)
 
 and the same test with auto cases names:
 
