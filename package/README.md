@@ -2,8 +2,6 @@
 
 This package will help you to run parametrised tests easily [typesafe] without text tables or arrays of arrays.
 
-Test environment can be overridden (by default it is jest)
-
 ![](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
 [![GitHub watchers](https://img.shields.io/github/watchers/mmisty/jest-test-each.svg?style=social)](https://github.com/mmisty/jest-test-each/watchers)
@@ -97,8 +95,8 @@ You can override test runner environment (by default it is jest env) by the foll
 
 ```javascript
 TestEachEnv({
-  suiteRunner: describe,
-  testRunner: it,
+  describe: describe,
+  it: it,
   beforeAll: beforeAll,
   ...
 });
