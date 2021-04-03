@@ -39,6 +39,7 @@ its('roundings')
 Run test in idea with jest plugin:
 
 ![](./package/docs/roundings.png)
+![](https://github.com/mmisty/jest-test-each/blob/main/package/docs/roundings.png)
 
 ### More complex
 
