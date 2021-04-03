@@ -17,6 +17,10 @@ Test environment can be overridden (by default it is jest)
 
 ## Examples
 
+You can see demo [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example)
+And [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.test.ts)
+are tests.
+
 ### Simple
 
 ```typescript
@@ -34,7 +38,7 @@ its('roundings')
 
 Run test in idea with jest plugin:
 
-![](./docs/roundings.png)
+![](https://github.com/mmisty/jest-test-each/tree/main/package/docs/roundings.png)
 
 ### More complex
 
@@ -56,11 +60,11 @@ its('check calculator')
   });
 ```
 
-![](./docs/calc.png)
+![](https://github.com/mmisty/jest-test-each/tree/main/package/docs/calc.png)
 
 and the same test with auto cases names:
 
-![](./docs/calc2.png)
+![](https://github.com/mmisty/jest-test-each/tree/main/package/docs/calc2.png)
 
 ## Setup
 
@@ -70,13 +74,12 @@ Install dev dependency:
 yarn add -D jest-test-each
 ```
 
-Add the following into your setupFilesAfterEnv config jest.setup.js file:
+Add the following into your config setup.js file which is referred in jest.config.js - setupFilesAfterEnv section:
 
 ```
+// Looking a way to improve this. Can anyone help ?)
 require('jest-test-each');
 ```
-
-Looking a way to improve this. Can anyone help ?)
 
 for .ts tests to see globals 'its' and 'Test' add the following to your tsconfig:
 
