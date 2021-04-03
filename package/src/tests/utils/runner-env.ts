@@ -82,4 +82,4 @@ const testRunnerEnv: Env = {
   afterAll,
 };
 
-export const createTest = (desc: string) => () => TestEachTesting(testRunnerEnv)(desc);
+export const createTest = (desc?: string) => () => TestEachTesting(testRunnerEnv)(desc);

@@ -12,7 +12,6 @@ import {
 
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
-//type Additions = {only?: boolean}
 
 type InputCaseType<T> = T & WithDesc & WithFlatDesc; // WithDesc => should have field in type for further union
 
@@ -41,7 +40,7 @@ export class TestEach<Combined = {}> {
     this.env = userEnv.env ?? testEnvDefault().env;
 
     if (!this.env) {
-      throw new Error('Please specify test env (jest/mocha) like: ');
+      throw new Error('Please specify test env (jest/mocha) like');
     }
   }
 
@@ -63,6 +62,7 @@ export class TestEach<Combined = {}> {
     this.concurrentTests = true;
     return this;
   }
+
   // todo: defect addition
   each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut> {
     this.groups.push(cases as any);
@@ -80,36 +80,35 @@ export class TestEach<Combined = {}> {
 
     if (this.onlyOne) {
       // todo cleanup
-      if (this.onlyOneFilter) {
-        const notFound = this.groups.every(
-          p => p.filter(k => this.onlyOneFilter?.(k)).length === 0,
-        );
-        if (notFound) {
-          testRunner('Only one search failed', () => {
-            throw new Error('No such case: ' + this.onlyOneFilter!.toString());
-          });
-          return;
-        }
+      const notFound = this.groups.every(p => p.filter(k => this.onlyOneFilter?.(k)).length === 0);
 
-        this.groups = this.groups.map((p, i) => {
-          const filtered = p.filter(k => this.onlyOneFilter?.(k));
-          return [filtered.length === 0 ? p[0] : filtered[0]];
+      if (this.onlyOneFilter && notFound) {
+        testRunner('Only one search failed', () => {
+          throw new Error('No such case: ' + this.onlyOneFilter!.toString());
         });
-      } else {
-        this.groups = this.groups.map(p => [p[0]]);
+        return;
       }
+
+      this.groups = this.onlyOneFilter
+        ? this.groups.map((p, i) => {
+            const filtered = p.filter(k => this.onlyOneFilter?.(k));
+            return [filtered.length === 0 ? p[0] : filtered[0]];
+          })
+        : this.groups.map(p => [p[0]]);
     }
-    const runCheck = () => {
+
+    const testIfOnly = () => {
       if (this.onlyOne) {
         testRunner('only() should be removed before committing', () => {
           guard(!this.onlyOne, 'Do not forget to remove .only() from your test before committing');
         });
       }
     };
-    if (this.groups.length === 0) {
-      guard(!!this.desc, 'Test should have name when no cases');
+
+    if (this.groups.length === 0 && !!this.desc) {
+      // should not group into suite when only one case
       testRunner(this.desc!, () => body({} as any));
-      runCheck();
+      testIfOnly();
       return;
     }
 
@@ -120,13 +119,8 @@ export class TestEach<Combined = {}> {
       return `${numericCases ? num + '. ' : ''}${name}`;
     };
 
-    const runCase = <T>(body: (each: T) => void) => (t: OneTest<T>, i: number) => {
-      guard(!!t.name, 'Test should have name (empty group of cases)');
-      const name = entityName(i + 1, t.name);
-      testRunner(name, () => body(t.data)); // todo;
-    };
-
     const allCases: OneTest<Combined>[] = [];
+
     treeWalk(root, undefined, t => {
       allCases.push({
         ...t,
@@ -136,13 +130,17 @@ export class TestEach<Combined = {}> {
     });
     const isFlat = allCases.every(p => p.flatDesc);
 
-    guard(
-      allCases.every(t => t.name),
-      'Every case in .each should have not empty data',
-    );
-    guard(allCases.length !== 0, 'Should be at least one case');
+    const suiteGuards = () => {
+      guard(!(this.groups.length === 0 && !this.desc), 'Test should have name when no cases');
+    };
 
-    const run = () =>
+    const runCase = <T>(body: (each: T) => void) => (t: OneTest<T>, i: number) => {
+      guard(!!t.name, 'Every case in .each should have not empty data');
+      const name = entityName(i + 1, t.name);
+      testRunner(name, () => body(t.data)); // todo;
+    };
+
+    const tests = () =>
       treeWalk(
         root,
         (t, i, inside) => {
@@ -151,13 +149,14 @@ export class TestEach<Combined = {}> {
         runCase(body),
       );
 
-    const runFlat = () => allCases.forEach(runCase(body));
+    const testsFlat = () => allCases.forEach(runCase(body));
 
     runSuite(
       this.env.describe,
       () => {
-        runCheck();
-        groupBySuites && !isFlat ? run() : runFlat();
+        suiteGuards();
+        testIfOnly();
+        groupBySuites && !isFlat ? tests() : testsFlat();
       },
       this.desc,
     );

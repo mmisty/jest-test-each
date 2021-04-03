@@ -67,4 +67,25 @@ describe('Test jest test each', () => {
       () => expect(result.passes[0].name).toMatchInlineSnapshot(`"something3: c"`),
     );
   });
+
+  it('should be no suite when test has no name', async () => {
+    await createTest()()
+      .config(config)
+      .each([{ something1: 'a' }, { something1: 'b' }])
+      .run(t => success());
+
+    assertAll(
+      () => expect(result.passes.length).toBe(2),
+      () => expect(result.failures.length).toBe(0),
+      () => expect(result.totalEntities).toBe(2),
+      () => expect(result.suites.length).toBe(0),
+      () =>
+        expect(result.tests).toMatchInlineSnapshot(`
+          Array [
+            "something1: a",
+            "something1: b",
+          ]
+        `),
+    );
+  });
 });
