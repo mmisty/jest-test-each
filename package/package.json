@@ -14,7 +14,7 @@
   "author": "Taisia Pitko (mmisty) <minydas@yandex.ru>",
   "license": "MIT",
   "scripts": {
-    "prepublish": "pretty-quick && rm -rf dist/ && tsc && yarn test && cd ../tests/example && yarn && rm -rf ./node_modules/jest-test-each/dist && cp -R ../../package/dist ./node_modules/jest-test-each/ && yarn test",
+    "prepublish": "cd ../ && cp README.md ./package/README.md && cd ./package && pretty-quick && rm -rf dist/ && tsc && yarn test && cd ../tests/example && yarn && rm -rf ./node_modules/jest-test-each/dist && cp -R ../../package/dist ./node_modules/jest-test-each/ && yarn test",
     "build": "rm -rf dist/ && tsc",
     "fmt": "pretty-quick",
     "test": "jest",
