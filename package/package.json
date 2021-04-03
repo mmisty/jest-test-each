@@ -1,6 +1,6 @@
 {
   "name": "jest-test-each",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "run parametrised tests easily [typesafe] without text tables or arrays of arrays.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,7 +17,8 @@
     "prepublish": "pretty-quick && rm -rf dist/ && tsc && yarn test && cd ../tests/example && yarn && rm -rf ./node_modules/jest-test-each/dist && cp -R ../../package/dist ./node_modules/jest-test-each/ && yarn test",
     "build": "rm -rf dist/ && tsc",
     "fmt": "pretty-quick",
-    "test": "jest"
+    "test": "jest",
+    "unpub": "npm unpublish jest-test-each@${0}"
   },
   "keywords": [
     "jest",
