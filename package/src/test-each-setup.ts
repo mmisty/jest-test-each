@@ -28,11 +28,10 @@ export const testEnvDefault: () => { env: Env } = () => ({
     afterAll,
     afterEach,
     it,
-    itOnly: it.only, // todo
-    itConcurrent: it.concurrent, // todo
     describe,
   },
-}); // todo may need to setup
+});
+
 export const TestEachEnv = (env: Env) => {
   userEnv.env = env;
 };

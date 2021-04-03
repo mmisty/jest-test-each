@@ -1,5 +1,5 @@
-import { cleanup, createTest, result } from './utils/runner-env';
-import { assertAll, success } from './utils/utils';
+import { cleanup, createTest, result } from '../utils/runner-env';
+import { assertAll, success } from '../utils/utils';
 
 const rootName = 'Test pack - root';
 const test = createTest(rootName);

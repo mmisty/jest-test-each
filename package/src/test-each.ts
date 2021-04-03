@@ -73,9 +73,9 @@ export class TestEach<Combined = {}> {
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
 
     const testRunner = this.onlyOne
-      ? this.env.itOnly
+      ? this.env.it.only
       : useConcurrency
-      ? this.env.itConcurrent
+      ? this.env.it.concurrent
       : this.env.it;
 
     if (this.onlyOne) {
@@ -99,10 +99,17 @@ export class TestEach<Combined = {}> {
         this.groups = this.groups.map(p => [p[0]]);
       }
     }
-
+    const runCheck = () => {
+      if (this.onlyOne) {
+        testRunner('only() should be removed before committing', () => {
+          guard(!this.onlyOne, 'Do not forget to remove .only() from your test before committing');
+        });
+      }
+    };
     if (this.groups.length === 0) {
       guard(!!this.desc, 'Test should have name when no cases');
       testRunner(this.desc!, () => body({} as any));
+      runCheck();
       return;
     }
 
@@ -145,13 +152,6 @@ export class TestEach<Combined = {}> {
       );
 
     const runFlat = () => allCases.forEach(runCase(body));
-    const runCheck = () => {
-      if (this.onlyOne) {
-        this.env.itOnly('only() should be removed before committing', () => {
-          guard(!this.onlyOne, 'Do not forget to remove .only() from your test before committing');
-        });
-      }
-    };
 
     runSuite(
       this.env.describe,

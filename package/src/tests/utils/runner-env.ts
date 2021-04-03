@@ -1,6 +1,6 @@
 import { TestEach } from '../../test-each';
 import { TestEachEnv } from '../../index';
-import { Env, Runner } from '../../test-env';
+import { Env, Runner, TestRunner } from '../../test-env';
 
 const stripAnsi = require('strip-ansi');
 
@@ -51,7 +51,7 @@ const suiteRunner: Runner = (name: string, body: () => void) => {
   body();
 };
 
-const testRunner: Runner = async (name: string, body: () => void): Promise<void> => {
+const testRunner = (async (name: string, body: () => void) => {
   // console.log('Test started: ' + name);
   let wasError = false;
   result.totalEntities++;
@@ -68,13 +68,14 @@ const testRunner: Runner = async (name: string, body: () => void): Promise<void>
     result.passes.push({ name: name });
     // console.log('Test passed\n===');
   }
-};
+}) as TestRunner;
+
+testRunner.only = testRunner;
+testRunner.concurrent = testRunner;
 
 const testRunnerEnv: Env = {
   describe: suiteRunner,
   it: testRunner,
-  itOnly: testRunner, // todo
-  itConcurrent: testRunner, // todo
   beforeEach,
   beforeAll,
   afterEach,
