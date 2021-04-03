@@ -1,4 +1,6 @@
-describe('sds', () => {
+import {delay} from "../utils";
+
+describe('checks', () => {
   its('sdsd1')
     .each([{ a: 1 }])
     .run(() => {
@@ -25,4 +27,16 @@ describe('sds', () => {
   Test('empty cases').run(() => {
     expect('1').toBe('1');
   });
+  
+  Test('test 5')
+    .concurrent()
+    .config({ numericCases: true, groupBySuites: false })
+    .each([{ a: 1 }])
+    .each([{ b: 2 }, { b: 6 }])
+    .each([{ c: 3 }, { c: 4 }, { c: 5 }])
+    .each([{ c: 3 }, { c: 4 }, { c: 5 }])
+    .run(async () => {
+      await delay(1000);
+      expect('1').toBe('1');
+    });
 });

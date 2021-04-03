@@ -2,7 +2,13 @@ import { guard } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
 import { getName } from './utils/name';
 import { Env, Runner } from './test-env';
-import { testConfig, testConfigDefault, testEnv, TestSetupType } from './test-each-setup';
+import {
+  testConfig,
+  testConfigDefault,
+  testEnvDefault,
+  TestSetupType,
+  userEnv,
+} from './test-each-setup';
 
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
@@ -25,17 +31,18 @@ export class TestEach<Combined = {}> {
   private conf: TestSetupType;
   private env: Env;
   private onlyOne: boolean = false;
+  private concurrentTests: boolean = false;
   private onlyOneFilter: OnlyInput<Combined> | undefined = undefined;
 
   constructor(desc: string | undefined) {
     this.desc = desc;
     this.conf = testConfig.config;
 
-    if (!testEnv.env) {
+    this.env = userEnv.env ?? testEnvDefault().env;
+
+    if (!this.env) {
       throw new Error('Please specify test env (jest/mocha) like: ');
     }
-
-    this.env = testEnv.env;
   }
 
   only(input?: OnlyInput<Combined>): TestEach<Combined> {
@@ -51,6 +58,11 @@ export class TestEach<Combined = {}> {
     return this;
   }
 
+  // todo proper
+  concurrent(): TestEach<Combined> {
+    this.concurrentTests = true;
+    return this;
+  }
   // todo: defect addition
   each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut> {
     this.groups.push(cases as any);
@@ -74,8 +86,13 @@ export class TestEach<Combined = {}> {
         this.groups = this.groups.map(p => [p[0]]);
       }
     }
+    const useConcurrency = this.concurrentTests || this.conf.concurrent;
 
-    const testRunner = this.onlyOne ? this.env.testRunnerOnly : this.env.testRunner;
+    const testRunner = this.onlyOne
+      ? this.env.itOnly
+      : useConcurrency
+      ? this.env.itConcurrent
+      : this.env.it;
 
     if (this.groups.length === 0) {
       guard(!!this.desc, 'Test should have name when no cases');
@@ -116,7 +133,7 @@ export class TestEach<Combined = {}> {
       treeWalk(
         root,
         (t, i, inside) => {
-          this.env.suiteRunner(entityName(i + 1, t.name), inside);
+          this.env.describe(entityName(i + 1, t.name), inside);
         },
         runCase(body),
       );
@@ -124,14 +141,14 @@ export class TestEach<Combined = {}> {
     const runFlat = () => allCases.forEach(runCase(body));
     const runCheck = () => {
       if (this.onlyOne) {
-        this.env.testRunnerOnly('only() should be removed before committing', () => {
+        this.env.itOnly('only() should be removed before committing', () => {
           guard(!this.onlyOne, 'Do not forget to remove .only() from your test before committing');
         });
       }
     };
 
     runSuite(
-      this.env.suiteRunner,
+      this.env.describe,
       () => {
         runCheck();
         groupBySuites && !isFlat ? run() : runFlat();
