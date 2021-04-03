@@ -17,9 +17,9 @@ Test environment can be overridden (by default it is jest)
 
 ## Examples
 
-You can see demo [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example)
-And [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.test.ts)
-are tests.
+You can see demo project [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example).
+
+Tests are [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.test.ts).
 
 ### Simple
 
