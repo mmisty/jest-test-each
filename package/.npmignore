@@ -9,7 +9,7 @@ tests/
 config/
 
 tsconfig.json
-jest.config.json
+jest.config.js
 tslint.json
 .prettierrc
 index.ts
