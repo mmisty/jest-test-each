@@ -78,18 +78,6 @@ describe('test examples', () => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
 
-  its('Only one test')
-    .each([
-      { input: 0, expected: '0' },
-      { input: 0.99, expected: '1' },
-      { input: 102.99998, expected: '103' },
-      { input: -6, expected: '-6' },
-    ])
-    // .only() // this could not be committed as far as guard is implemented
-    // .only((t) => t.expected === "1") // this could not be committed as far as guard is implemented
-    .run(t => {
-      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
-    });
   describe('wrapper', () => {
     its()
       .each([

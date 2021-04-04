@@ -14,7 +14,7 @@ type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
 
 type InputCaseType<T> = T & WithDesc & WithFlatDesc; // WithDesc => should have field in type for further union
-type Disposable = { dispose: () => void };
+type Disposable = { dispose?: () => void };
 type SimpleCase<T> = InputCaseType<T> | WithComplexDesc<T>;
 type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo
 type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
@@ -108,12 +108,32 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         await body(args || ({} as any), beforeResult);
       } finally {
         // after each
-        beforeResults.forEach(p => p.dispose());
+        beforeResults.forEach(p => (p.dispose ? p.dispose() : {}));
       }
     });
   }
+  private entityName = (num: number, name: string) => {
+    return `${this.conf.numericCases ? num + '. ' : ''}${name}`;
+  };
+
+  private runCase(testRunner: TestRunner, body: (each: Combined, b: BeforeT) => void) {
+    return (t: OneTest<Combined>, i: number) => {
+      guard(!!t.name, 'Every case in .each should have not empty data');
+      const name = this.entityName(i + 1, t.name);
+      this.runTest(testRunner, name, body, t.data, true);
+    };
+  }
+
+  private testIfOnly = (testRunner: TestRunner) => {
+    if (this.onlyOne) {
+      this.runTest(testRunner, 'only() should be removed before committing', () => {
+        throw new Error('Do not forget to remove .only() from your test before committing');
+      });
+    }
+  };
 
   run(body: (each: Combined, before: BeforeT) => void) {
+    const { groupBySuites } = this.conf;
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
 
     const testRunner = this.onlyOne
@@ -121,43 +141,9 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       : useConcurrency
       ? this.env.it.concurrent
       : this.env.it;
+    let allCases: OneTest<Combined>[] = [];
 
-    if (this.onlyOne) {
-      const notFound = this.groups.every(p => p.filter(k => this.onlyOneFilter?.(k)).length === 0);
-
-      if (this.onlyOneFilter && notFound) {
-        this.runTest(testRunner, 'Only one search failed', () => {
-          throw new Error('No such case: ' + this.onlyOneFilter!.toString());
-        });
-
-        return;
-      }
-      this.groups = this.filterOnly(testRunner);
-    }
-
-    const testIfOnly = () => {
-      if (this.onlyOne) {
-        this.runTest(testRunner, 'only() should be removed before committing', () => {
-          throw new Error('Do not forget to remove .only() from your test before committing');
-        });
-      }
-    };
-
-    if (this.groups.length === 0 && !!this.desc) {
-      // should not group into suite when only one case
-      this.runTest(testRunner, this.desc!, body, undefined, true);
-      testIfOnly();
-      return;
-    }
-
-    const { numericCases, groupBySuites } = this.conf;
     const root = createTree(this.groups);
-
-    const entityName = (num: number, name: string) => {
-      return `${numericCases ? num + '. ' : ''}${name}`;
-    };
-
-    const allCases: OneTest<Combined>[] = [];
 
     treeWalk(root, undefined, t => {
       allCases.push({
@@ -168,35 +154,48 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     });
     const isFlat = allCases.every(p => p.flatDesc);
 
+    if (this.onlyOne) {
+      const casesFound = allCases.filter(k =>
+        this.onlyOneFilter ? this.onlyOneFilter(k.data) : true,
+      );
+
+      if (this.onlyOneFilter && casesFound.length === 0) {
+        this.runTest(testRunner, 'Only one search failed', () => {
+          throw new Error('No such case: ' + this.onlyOneFilter!.toString());
+        });
+
+        return;
+      }
+      allCases = [casesFound[0]];
+    }
+
+    if (this.groups.length === 0 && !!this.desc) {
+      // should not group into suite when only one case
+      this.runTest(testRunner, this.desc!, body, undefined, true);
+      this.testIfOnly(testRunner);
+      return;
+    }
+
     const suiteGuards = () => {
       guard(!(this.groups.length === 0 && !this.desc), 'Test should have name when no cases');
-    };
-
-    const runCase = (body: (each: Combined, b: BeforeT) => void) => (
-      t: OneTest<Combined>,
-      i: number,
-    ) => {
-      guard(!!t.name, 'Every case in .each should have not empty data');
-      const name = entityName(i + 1, t.name);
-      this.runTest(testRunner, name, body, t.data, true);
     };
 
     const tests = () =>
       treeWalk(
         root,
         (t, i, inside) => {
-          this.env.describe(entityName(i + 1, t.name), inside);
+          this.env.describe(this.entityName(i + 1, t.name), inside);
         },
-        runCase(body),
+        this.runCase(testRunner, body),
       );
 
-    const testsFlat = () => allCases.forEach(runCase(body));
+    const testsFlat = () => allCases.forEach(this.runCase(testRunner, body));
 
     runSuite(
       this.env.describe,
       () => {
         suiteGuards();
-        testIfOnly();
+        this.testIfOnly(testRunner);
         groupBySuites && !isFlat && !this.onlyOne ? tests() : testsFlat();
       },
       this.desc,

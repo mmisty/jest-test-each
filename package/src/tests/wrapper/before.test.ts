@@ -82,7 +82,7 @@ describe('Test.before', () => {
         befores.disposed.push(t.b);
         return {
           result2: t.b,
-          dispose: () => befores.disposed.pop(),
+          dispose: () => befores.disposed.pop(), // todo check if prev dispose is being run
         };
       })
       .run((t, b) => {
@@ -170,4 +170,6 @@ describe('Test.before', () => {
         `),
     );
   });
+
+  // todo check async before
 });

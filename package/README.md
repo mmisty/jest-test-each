@@ -119,6 +119,7 @@ TestEachEnv({
 
 ## What's next
 
-- [ ] add '.before' to testEach with disposable interface for automatic cleanup
+- [x] add '.before' to testEach with disposable interface for automatic cleanup
+- [ ] add '.ensureCases' to testEach with to check case num with inlineSnapshot
 - [ ] do not create suite wrapping when only one test in the group
 - [ ] add ability to skip test if it is marked by defect

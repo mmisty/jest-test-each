@@ -68,9 +68,9 @@ describe('Test.only', () => {
   it('should pass when test.only and case is found', async () => {
     test()
       .config(config)
-      .each([{ a: '1' }, { a: '2' }])
+      .each([{ a: '1' }, { a: '2' }, { a: '3' }])
       .each([{ b: '3' }, { b: '4' }])
-      .only(t => t.b === '4')
+      .only(t => t.b === '4' && t.a === '3')
       .run(t => success());
 
     await waitFinished();
@@ -83,7 +83,7 @@ describe('Test.only', () => {
         expect(result.passes).toMatchInlineSnapshot(`
           Array [
             Object {
-              "name": "a: 1, b: 4",
+              "name": "a: 3, b: 4",
             },
           ]
         `),
