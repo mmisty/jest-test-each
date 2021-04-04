@@ -150,4 +150,25 @@ describe('test examples', () => {
     .run(t => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
+
+  its('Ensure cases')
+    .each([
+      { input: 0, expected: '0' },
+      { input: 102.99998, expected: '103' },
+      { input: 10, expected: '10' },
+    ])
+    .ensure('all cases snapshot', t =>
+      expect(t.map(p => p.input)).toMatchInlineSnapshot(`
+        Array [
+          0,
+          102.99998,
+          10,
+        ]
+      `),
+    )
+    .ensureCasesLength(a => a.toMatchInlineSnapshot(`3`))
+    // .only()
+    .run(t => {
+      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+    });
 });

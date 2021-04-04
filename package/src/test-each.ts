@@ -9,12 +9,13 @@ import {
   TestSetupType,
   userEnv,
 } from './test-each-setup';
+import JestMatchers = jest.JestMatchers;
 
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
 type WithDefect = { defect?: string };
 
-type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & WithDefect; // WithDesc => should have field in type for further union
+type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & WithDefect;
 type Disposable = { dispose?: () => void };
 type SimpleCase<T> = InputCaseType<T>;
 type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo desc as func doesn't work for cases as func
@@ -30,13 +31,16 @@ type BeforeInput<T, TOut> = (t: T) => Before<TOut>;
 export class TestEach<Combined = {}, BeforeT = {}> {
   private groups: Combined[][] = [];
   private befores: BeforeInput<Combined, BeforeT>[] = [];
-  private desc: string | undefined = '';
+  private ensures: { desc: string; check: (t: Combined[]) => void }[] = [];
+  private ensuresCasesLength: ((t: JestMatchers<number>) => void)[] = [];
   private conf: TestSetupType;
-  private env: Env;
   private defectTest: string | undefined = undefined;
   private onlyOne: boolean = false;
   private concurrentTests: boolean = false;
   private onlyOneFilter: OnlyInput<Combined> | undefined = undefined;
+
+  private readonly desc: string | undefined = '';
+  private readonly env: Env;
 
   constructor(desc: string | undefined) {
     this.desc = desc;
@@ -68,6 +72,16 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this;
   }
 
+  ensure(desc: string, cases: (t: Combined[]) => void): TestEach<Combined, BeforeT> {
+    this.ensures.push({ desc, check: cases });
+    return this;
+  }
+
+  ensureCasesLength(exp: (t: JestMatchers<number>) => void): TestEach<Combined, BeforeT> {
+    this.ensuresCasesLength.push(exp);
+    return this;
+  }
+
   defect(reason: string): TestEach<Combined, BeforeT> {
     this.defectTest = reason;
     return this;
@@ -78,7 +92,6 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this as any;
   }
 
-  // todo: defect addition
   each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut, BeforeT> {
     this.groups.push(cases as any);
     return this as any;
@@ -93,9 +106,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   ) {
     const markedDefect = (args as SimpleCase<Combined>)?.defect || this.defectTest;
     const defectTestName = markedDefect ? ` - Marked with defect '${markedDefect}'` : '';
-    const testName = markedDefect
-      ? name.replace(/(, )?defect\:.*(,|$)/, '') + defectTestName
-      : name;
+    const testName = markedDefect ? name.replace(/(, )?defect:.*(,|$)/, '') + defectTestName : name;
 
     return testRunner(testName, async () => {
       if (markedDefect) {
@@ -180,6 +191,25 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         flatDesc: (t.data as SimpleCase<Combined>).flatDesc,
       });
     });
+
+    const runEnsures = () => {
+      if (this.ensures.length > 0) {
+        this.ensures.forEach(ensure => {
+          this.runTest(testRunner, 'Ensure: ' + ensure.desc, () => {
+            ensure.check(allCases.map(p => p.data));
+          });
+        });
+      }
+
+      if (this.ensuresCasesLength.length > 0) {
+        this.ensuresCasesLength.forEach(ensure => {
+          this.runTest(testRunner, 'Ensure cases length', () => {
+            ensure(expect(allCases.map(p => p.data).length));
+          });
+        });
+      }
+    };
+
     const isFlat = allCases.every(p => p.flatDesc);
 
     if (this.onlyOne) {
@@ -223,6 +253,9 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       this.env.describe,
       () => {
         suiteGuards();
+        if (!this.onlyOne) {
+          runEnsures();
+        }
         this.testIfOnly(testRunner);
         groupBySuites && !isFlat && !this.onlyOne ? tests() : testsFlat();
       },

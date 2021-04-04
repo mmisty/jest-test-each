@@ -116,13 +116,17 @@ TestEachEnv({
 - [x] ability to have flat tests cases (not groupped to suites) when each case has 'flatDesc'
 - [x] global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
 - [x] ability to run without single .each (`its('foo').run(..)`)
-- [x] To run one test from TestEach like it.only (`.only(<filter>)`) - [example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.only.test.ts).
-- [x] ability to run '.before' in testEach with disposable interface for automatic cleanup - [example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.before.test.ts).
-- [x] ability to skip test if it is marked with defect - [example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.defect.test.ts).
-- [ ] To start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
+- [x] To run one test from TestEach like it.only (`.only(<filter>)`) ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.only.test.ts)).
+- [x] ability to run '.before' in testEach with disposable interface for automatic cleanup ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.before.test.ts)).
+- [x] ability to skip test if it is marked with defect ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.defect.test.ts)).
+- [x] '.ensure' to check cases match some condition ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.ensure.test.ts)).
+- [x] '.ensureCasesLength' to check cases length  - in case when .each has dynamic args and you don't want to miss some tests ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.ensure-length.test.ts)).
 
 ## What's next
 
-- [ ] add '.ensureCases' to testEach with to check case num with inlineSnapshot
 - [ ] do not create suite wrapping when only one test in the group
 - [ ] create addition field 'reasons' for defect - to fail when defected test fails with other reason then expected
+- [ ] ability to skip test
+
+## Unavailable features
+1. to start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
