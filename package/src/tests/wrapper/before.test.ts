@@ -129,6 +129,53 @@ describe('Test.before', () => {
     );
   });
 
+  it('should pass test with .before which has no dispose', async () => {
+    test()
+      .config(config)
+      .each([{ a: '1' }, { a: '2' }])
+      .each([{ b: '3' }, { b: '4' }])
+      .before(t => ({ result1: t.a }))
+      .run((t, { result1 }) => {
+        expect(result1).toBe(t.a);
+      });
+
+    await waitFinished();
+
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+          Object {
+            "failures": Array [],
+            "passes": Array [
+              Object {
+                "name": "b: 3",
+              },
+              Object {
+                "name": "b: 4",
+              },
+              Object {
+                "name": "b: 3",
+              },
+              Object {
+                "name": "b: 4",
+              },
+            ],
+            "suites": Array [
+              "Test pack - root",
+              "a: 1",
+              "a: 2",
+            ],
+            "tests": Array [
+              "b: 3",
+              "b: 4",
+              "b: 3",
+              "b: 4",
+            ],
+            "totalEntities": 7,
+          }
+        `),
+    );
+  });
+
   it('should fail test when .before throws', async () => {
     test()
       .config(config)
