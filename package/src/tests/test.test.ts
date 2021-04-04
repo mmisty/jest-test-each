@@ -140,13 +140,11 @@ describe('test examples', () => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
 
-  its('Simple test: roundings')
+  its('Defected test')
     .each([
       { input: 0, expected: '0' },
-      { input: 0.99, expected: '1' },
       { input: 102.99998, expected: '104', defect: 'Rounding Error' },
       // { input: 10, expected: '10', defect: 'Rounding Error 2' },
-      { input: -6, expected: '-6' },
     ])
     // .only(t=> t.expected==='104')
     .run(t => {

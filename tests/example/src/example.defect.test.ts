@@ -8,7 +8,7 @@ describe(`Test with 'defect' example`, () => {
    * for you to unblock this test
    *
    * */
-  its('Only one test')
+  its('Defect test')
     .each([
       { input: 0, expected: '0' },
       { input: 0.99, expected: '1' },

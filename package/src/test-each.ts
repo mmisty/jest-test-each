@@ -104,7 +104,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
           return;
         }
 
-        throw new Error(`Test marked with defect but doesn't fail`);
+        throw new Error(`Test doesn't fail but marked with defect`);
       }
 
       await this.runBody(body, args, isBefore);

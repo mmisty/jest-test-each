@@ -16,6 +16,7 @@ type ResultType = {
   totalEntities: number;
   suites: string[];
   tests: string[];
+  skips: string[];
 };
 
 export const result: ResultType = {
@@ -24,6 +25,7 @@ export const result: ResultType = {
   totalEntities: 0,
   suites: [],
   tests: [],
+  skips: [],
 };
 
 const started: { s: string[] } = { s: [] };
@@ -36,6 +38,7 @@ export const cleanup = () => {
 
   result.suites = [];
   result.tests = [];
+  result.skips = [];
 };
 
 type Pass = {
@@ -105,7 +108,7 @@ testRunner.only = testRunner;
 testRunner.concurrent = testRunner;
 
 const pending = (reason?: string) => {
-  // todo
+  result.skips.push(stripAnsi(reason || 'no reason'));
 };
 
 const testRunnerEnv: Env = {

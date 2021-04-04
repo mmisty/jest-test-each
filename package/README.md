@@ -125,3 +125,4 @@ TestEachEnv({
 
 - [ ] add '.ensureCases' to testEach with to check case num with inlineSnapshot
 - [ ] do not create suite wrapping when only one test in the group
+- [ ] create addition field 'reasons' for defect - to fail when defected test fails with other reason then expected
