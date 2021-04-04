@@ -17,7 +17,7 @@ This package will help you to run parametrised tests easily [typesafe] without t
 
 You can see demo project [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example).
 
-Tests are [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.test.ts).
+Tests are [here](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src).
 
 ### Simple
 
@@ -110,16 +110,16 @@ TestEachEnv({
   - group each level by suite or not
 - [x] ability to setup test runner environment (by default it is jest)
 - [x] ability to specify description for each case as function depending on case args
-- [x] ability to create .each level depending on previous
-- [x] ability to have flat tests cases (not groupped) when each case has 'flatDesc'
+- [x] ability to create .each level depending on previous data
+- [x] ability to have flat tests cases (not groupped to suites) when each case has 'flatDesc'
 - [x] global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
 - [x] ability to run without single .each (`its('foo').run(..)`)
 - [x] To run one test from TestEach like it.only (`.only(<filter>)`)
+- [x] ability to run '.before' in testEach with disposable interface for automatic cleanup
 - [ ] To start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
 
 ## What's next
 
-- [x] add '.before' to testEach with disposable interface for automatic cleanup
 - [ ] add '.ensureCases' to testEach with to check case num with inlineSnapshot
 - [ ] do not create suite wrapping when only one test in the group
 - [ ] add ability to skip test if it is marked by defect

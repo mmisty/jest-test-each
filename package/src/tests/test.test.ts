@@ -120,7 +120,7 @@ describe('test examples', () => {
         someResult: 'a',
       };
     })
-    .only()
+    // .only()
     .run(async (t, { someResult }) => {
       expect(someResult).toBe('a');
     });
