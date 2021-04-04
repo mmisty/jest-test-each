@@ -7,6 +7,7 @@ describe(`Test with 'defect' example`, () => {
    * If test marked with defect passes - then runner will fail this case
    * for you to unblock this test
    *
+   * And also you can mark all tests by defect adding .defect('..reason')
    * */
   its('Defect test')
     .each([
@@ -20,5 +21,17 @@ describe(`Test with 'defect' example`, () => {
     .each([{ formatUnused: 1 }, { formatUnused: 2 }])
     .run(t => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+    });
+
+  its('Defect test - all tests fail')
+    .defect('not implemented')
+    .each([
+      { input: 0, expected: '0' },
+      { input: 10, expected: '10' },
+      { input: -6, expected: '-6' },
+    ])
+    .each([{ formatUnused: 1 }, { formatUnused: 2 }])
+    .run(t => {
+      throw new Error('not implemented');
     });
 });
