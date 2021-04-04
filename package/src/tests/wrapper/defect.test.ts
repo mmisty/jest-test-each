@@ -28,6 +28,7 @@ describe('Test with defect', () => {
             },
           ],
           "passes": Array [],
+          "skips": Array [],
           "suites": Array [
             "Test pack - root",
           ],

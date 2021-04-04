@@ -41,6 +41,7 @@ describe('Test jest test each', () => {
                 "name": "something: ab",
               },
             ],
+            "skips": Array [],
             "suites": Array [
               "Test pack - root",
             ],

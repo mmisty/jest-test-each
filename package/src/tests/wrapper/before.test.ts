@@ -49,6 +49,7 @@ describe('Test.before', () => {
                 "name": "b: 4",
               },
             ],
+            "skips": Array [],
             "suites": Array [
               "Test pack - root",
               "a: 1",
@@ -112,6 +113,7 @@ describe('Test.before', () => {
                 "name": "b: 4",
               },
             ],
+            "skips": Array [],
             "suites": Array [
               "Test pack - root",
               "a: 1",
@@ -143,36 +145,37 @@ describe('Test.before', () => {
 
     assertAll(() =>
       expect(result).toMatchInlineSnapshot(`
-          Object {
-            "failures": Array [],
-            "passes": Array [
-              Object {
-                "name": "b: 3",
-              },
-              Object {
-                "name": "b: 4",
-              },
-              Object {
-                "name": "b: 3",
-              },
-              Object {
-                "name": "b: 4",
-              },
-            ],
-            "suites": Array [
-              "Test pack - root",
-              "a: 1",
-              "a: 2",
-            ],
-            "tests": Array [
-              "b: 3",
-              "b: 4",
-              "b: 3",
-              "b: 4",
-            ],
-            "totalEntities": 7,
-          }
-        `),
+        Object {
+          "failures": Array [],
+          "passes": Array [
+            Object {
+              "name": "b: 3",
+            },
+            Object {
+              "name": "b: 4",
+            },
+            Object {
+              "name": "b: 3",
+            },
+            Object {
+              "name": "b: 4",
+            },
+          ],
+          "skips": Array [],
+          "suites": Array [
+            "Test pack - root",
+            "a: 1",
+            "a: 2",
+          ],
+          "tests": Array [
+            "b: 3",
+            "b: 4",
+            "b: 3",
+            "b: 4",
+          ],
+          "totalEntities": 7,
+        }
+      `),
     );
   });
 
@@ -204,6 +207,7 @@ describe('Test.before', () => {
               },
             ],
             "passes": Array [],
+            "skips": Array [],
             "suites": Array [
               "Test pack - root",
               "a: 1",
