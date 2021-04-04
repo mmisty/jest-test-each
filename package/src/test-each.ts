@@ -33,6 +33,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   private desc: string | undefined = '';
   private conf: TestSetupType;
   private env: Env;
+  private defectTest: string | undefined = undefined;
   private onlyOne: boolean = false;
   private concurrentTests: boolean = false;
   private onlyOneFilter: OnlyInput<Combined> | undefined = undefined;
@@ -67,6 +68,11 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this;
   }
 
+  defect(reason: string): TestEach<Combined, BeforeT> {
+    this.defectTest = reason;
+    return this;
+  }
+
   before<TOut>(before: BeforeInput<Combined, TOut>): TestEach<Combined, BeforeT & TOut> {
     this.befores.push(before as any);
     return this as any;
@@ -85,7 +91,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     args?: Combined,
     isBefore?: boolean,
   ) {
-    const markedDefect = (args as SimpleCase<Combined>)?.defect;
+    const markedDefect = (args as SimpleCase<Combined>)?.defect || this.defectTest;
     const defectTestName = markedDefect ? ` - Marked with defect '${markedDefect}'` : '';
     const testName = markedDefect
       ? name.replace(/(, )?defect\:.*(,|$)/, '') + defectTestName
