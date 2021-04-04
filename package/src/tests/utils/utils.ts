@@ -34,6 +34,6 @@ export async function delay(ms: number, ...messages: string[]) {
 export function success() {
   expect(1).toBe(1);
 }
-export function fail() {
+export function failure() {
   expect(1).toBe(0);
 }

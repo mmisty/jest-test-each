@@ -14,8 +14,9 @@ import JestMatchers = jest.JestMatchers;
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
 type WithDefect = { defect?: string };
+type WithSkip = { skip?: string };
 
-type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & WithDefect;
+type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & WithDefect & WithSkip;
 type Disposable = { dispose?: () => void };
 type SimpleCase<T> = InputCaseType<T>;
 type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo desc as func doesn't work for cases as func
@@ -35,6 +36,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   private ensuresCasesLength: ((t: JestMatchers<number>) => void)[] = [];
   private conf: TestSetupType;
   private defectTest: string | undefined = undefined;
+  private skippedTest: string | undefined = undefined;
   private onlyOne: boolean = false;
   private concurrentTests: boolean = false;
   private onlyOneFilter: OnlyInput<Combined> | undefined = undefined;
@@ -87,6 +89,11 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this;
   }
 
+  skip(reason: string): TestEach<Combined, BeforeT> {
+    this.skippedTest = reason;
+    return this;
+  }
+
   before<TOut>(before: BeforeInput<Combined, TOut>): TestEach<Combined, BeforeT & TOut> {
     this.befores.push(before as any);
     return this as any;
@@ -104,11 +111,17 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     args?: Combined,
     isBefore?: boolean,
   ) {
+    const skipped = (args as SimpleCase<Combined>)?.skip || this.skippedTest;
     const markedDefect = (args as SimpleCase<Combined>)?.defect || this.defectTest;
     const defectTestName = markedDefect ? ` - Marked with defect '${markedDefect}'` : '';
     const testName = markedDefect ? name.replace(/(, )?defect:.*(,|$)/, '') + defectTestName : name;
 
     return testRunner(testName, async () => {
+      if (skipped) {
+        this.env.pending(`Test skipped: '${skipped}'`);
+        return;
+      }
+
       if (markedDefect) {
         // if it passes -> fail
         // if it fails -> skip

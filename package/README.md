@@ -121,12 +121,12 @@ TestEachEnv({
 - [x] ability to skip test if it is marked with defect ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.defect.test.ts)).
 - [x] '.ensure' to check cases match some condition ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.ensure.test.ts)).
 - [x] '.ensureCasesLength' to check cases length  - in case when .each has dynamic args and you don't want to miss some tests ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.ensure-length.test.ts)).
+- [x] ability to skip test
 
 ## What's next
 
-- [ ] do not create suite wrapping when only one test in the group
+- [ ] do not create suite wrapping when resulted to only one test in the group
 - [ ] create addition field 'reasons' for defect - to fail when defected test fails with other reason then expected
-- [ ] ability to skip test
 
 ## Unavailable features
 1. to start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
