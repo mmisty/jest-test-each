@@ -7,6 +7,8 @@ describe(`Test with 'defect' example`, () => {
    * If test marked with defect passes - then runner will fail this case
    * for you to unblock this test
    *
+   * you can add 'actualFailReasonParts' to case with defect to check fail reason is expected ot not
+   *
    * And also you can mark all tests by defect adding .defect('..reason')
    * */
   its('Defect test')
