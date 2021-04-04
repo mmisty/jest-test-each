@@ -17,7 +17,7 @@
     "prepublish": "pretty-quick && rm -rf dist/ && tsc && yarn test && cd ../tests/example && yarn && rm -rf ./node_modules/jest-test-each/dist && cp -R ../../package/dist ./node_modules/jest-test-each/ && yarn test",
     "build": "rm -rf dist/ && tsc",
     "fmt": "pretty-quick",
-    "test": "jest",
+    "test": "jest --coverage",
     "unpub": "npm unpublish jest-test-each@${0}"
   },
   "keywords": [
