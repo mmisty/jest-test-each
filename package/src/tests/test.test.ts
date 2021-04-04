@@ -92,24 +92,37 @@ describe('test examples', () => {
     .each([{ a: '1' }, { a: '2' }])
     .each([{ b: '3' }, { b: '4' }])
     .before(t => {
-      console.log('before each');
+      console.log('before each1');
       return {
         someResult: 'a',
         dispose: () => console.log('After Each1'),
       };
     })
     .before(t => {
-      console.log('before each');
+      console.log('before each2');
       return {
         someResult1: 'b',
         dispose: () => console.log('After Each2'),
       };
     })
-    // .only()
     .run(async (t, b) => {
       expect(b.someResult).toBe('a');
       expect(b.someResult1).toBe('b');
       await delay(100);
+    });
+
+  its('Before test - no dispose')
+    .each([{ a: '1' }, { a: '2' }])
+    .each([{ b: '3' }, { b: '4' }])
+    .before(t => {
+      console.log('before each');
+      return {
+        someResult: 'a',
+      };
+    })
+    .only()
+    .run(async (t, { someResult }) => {
+      expect(someResult).toBe('a');
     });
 
   its('Only one test')
