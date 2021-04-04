@@ -1,15 +1,17 @@
 import { Env } from './test-env';
 
 export type TestSetupType = {
-  numericCases: boolean;
-  groupBySuites: boolean;
-  concurrent: boolean;
+  numericCases: boolean; // number suites and case in each suite
+  groupBySuites: boolean; // group tests by suites when cases multiplication
+  concurrent: boolean; // run tests concurrently
+  maxTestNameLength: number;
 };
 
 export const testConfigDefault: TestSetupType = {
   numericCases: true,
   groupBySuites: true,
   concurrent: false,
+  maxTestNameLength: 100,
 };
 
 export const testConfig: { config: TestSetupType } = {

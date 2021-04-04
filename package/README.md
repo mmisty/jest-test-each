@@ -105,9 +105,11 @@ TestEachEnv({
 ## Features
 
 - [x] cases multiplication (`.each().each()....run()`)
-- [x] ability to setup test-each:
-  - number cases or not
+- [x] ability to setup test-each (global setup or each test setup):
+  - number suites/cases or not
   - group each level by suite or not
+  - concurrent testing
+  - max length of case name - on reaching it will ask to sepcify explicit description for case
 - [x] ability to setup test runner environment (by default it is jest)
 - [x] ability to specify description for each case as function depending on case args
 - [x] ability to create .each level depending on previous data

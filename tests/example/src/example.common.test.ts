@@ -1,6 +1,6 @@
 import { calc, delay } from './functions';
 
-describe('test examples', () => {
+describe('Test examples', () => {
   its('Simple test: roundings')
     .each([
       { input: 0, expected: '0' },

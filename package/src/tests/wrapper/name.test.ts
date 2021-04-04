@@ -62,7 +62,7 @@ describe('naming', () => {
         ],
       },
       expFail: true,
-      error: `Case name is too long (>100 symbols), please specify desc`,
+      error: `Case name is too long (>100 symbols), please specify 'desc'`,
     },
     {
       desc: 'long name with desc',
@@ -101,5 +101,23 @@ describe('naming', () => {
           : () => expect(err1?.message).toBe(p.error),
       );
     });
+  });
+
+  it('case length configuration', async () => {
+    let err1: Error | undefined = undefined;
+    try {
+      test()
+        .config({ maxTestNameLength: 10 })
+        .each([{ a: 'supersupersuper' }])
+        .run(t => success());
+
+      await waitFinished();
+    } catch (err) {
+      err1 = err;
+    }
+
+    assertAll(() =>
+      expect(err1?.message).toBe("Case name is too long (>10 symbols), please specify 'desc'"),
+    );
   });
 });

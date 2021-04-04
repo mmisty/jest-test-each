@@ -1,4 +1,4 @@
-describe('Test.only test', () => {
+describe('Test.only() example', () => {
   /*
    * using only() will run 2 tests:
    * 1 - one test from test file from suite where only is used

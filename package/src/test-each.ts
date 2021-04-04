@@ -133,7 +133,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   };
 
   run(body: (each: Combined, before: BeforeT) => void) {
-    const { groupBySuites } = this.conf;
+    const { groupBySuites, maxTestNameLength } = this.conf;
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
 
     const testRunner = this.onlyOne
@@ -143,12 +143,12 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       : this.env.it;
     let allCases: OneTest<Combined>[] = [];
 
-    const root = createTree(this.groups);
+    const root = createTree(this.groups, maxTestNameLength);
 
     treeWalk(root, undefined, t => {
       allCases.push({
         ...t,
-        name: getName(t.data),
+        name: getName(t.data, maxTestNameLength),
         flatDesc: (t.data as SimpleCase<Combined>).flatDesc,
       });
     });

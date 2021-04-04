@@ -1,12 +1,12 @@
-export const getName = <T>(obj: T): string => {
+export const getName = <T>(obj: T, maxLength: number): string => {
   const untypedObj = obj as any;
   const desc = untypedObj.desc;
   const flatDesc = untypedObj.flatDesc;
   const result =
     flatDesc || (desc ? (typeof desc === 'function' ? desc(obj) : desc) : getNameInt(obj));
 
-  if (result.length > 100) {
-    throw new Error('Case name is too long (>100 symbols), please specify desc');
+  if (result.length > maxLength) {
+    throw new Error(`Case name is too long (>${maxLength} symbols), please specify 'desc'`);
   }
 
   return result;

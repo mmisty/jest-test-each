@@ -15,10 +15,10 @@ type Node<T> = {
   tests: OneTest<T>[];
 };
 
-const createNode = <T>(obj: T, parent?: Node<T>): Node<T> => {
+const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Node<T> => {
   //const objData = typeof obj === 'string' ? {} :obj;
   return {
-    name: getName(obj),
+    name: getName(obj, maxTestNameLength),
     children: [],
     data: obj || {},
     previousData: { ...parent?.previousData, ...obj },
@@ -26,8 +26,8 @@ const createNode = <T>(obj: T, parent?: Node<T>): Node<T> => {
   };
 };
 
-const createTree = <T = {}>(levels: T[][]): Node<T> => {
-  const root = createNode({});
+const createTree = <T = {}>(levels: T[][], maxTestNameLength: number): Node<T> => {
+  const root = createNode({}, maxTestNameLength);
 
   const populateNodes = <K>(node: Node<K>, nextLevel: number = 0) => {
     for (const [levelNum, cases] of levels.entries()) {
@@ -41,15 +41,15 @@ const createTree = <T = {}>(levels: T[][]): Node<T> => {
 
         newCases.forEach((p: T) => {
           node.tests.push({
-            name: getName(p),
-            desc: (p as any).desc || getName(p),
+            name: getName(p, maxTestNameLength),
+            desc: (p as any).desc || getName(p, maxTestNameLength),
             data: { ...node.previousData, ...p },
           });
         });
         return;
       } else {
         newCases.forEach((p: any) => {
-          const child = createNode(p, node);
+          const child = createNode(p, maxTestNameLength, node);
           populateNodes(child, levelNum + 1);
           node.children.push(child);
         });

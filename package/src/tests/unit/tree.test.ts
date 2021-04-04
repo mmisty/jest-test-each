@@ -8,7 +8,7 @@ describe('units', function () {
       [{ hij: 1 }, { hij: 3 }],
     ];
 
-    const root = createTree(data);
+    const root = createTree(data, 100);
     let result: string[] = [];
     const byTree = (node: Node<any>, level: number) => {
       result.push(' '.repeat(level * 2) + 'suite:' + node.name);
