@@ -26,9 +26,9 @@ type OnlyInput<T> = (t: T) => boolean;
 type Before<T> = T & Disposable;
 type BeforeInput<T, TOut> = (t: T) => Before<TOut>;
 
-export class TestEach<Combined = {}> {
+export class TestEach<Combined = {}, BeforeT = {}> {
   private groups: Combined[][] = [];
-  private befores: BeforeInput<Combined, {}>[] = []; // todo
+  private befores: BeforeInput<Combined, BeforeT>[] = [];
   private desc: string | undefined = '';
   private conf: TestSetupType;
   private env: Env;
@@ -47,7 +47,7 @@ export class TestEach<Combined = {}> {
     }
   }
 
-  only(input?: OnlyInput<Combined>): TestEach<Combined> {
+  only(input?: OnlyInput<Combined>): TestEach<Combined, BeforeT> {
     this.onlyOne = true;
     if (input) {
       this.onlyOneFilter = input;
@@ -55,24 +55,24 @@ export class TestEach<Combined = {}> {
     return this;
   }
 
-  config(config: Partial<TestSetupType>): TestEach<Combined> {
+  config(config: Partial<TestSetupType>): TestEach<Combined, BeforeT> {
     this.conf = { ...testConfigDefault, ...config };
     return this;
   }
 
   // todo proper
-  concurrent(): TestEach<Combined> {
+  concurrent(): TestEach<Combined, BeforeT> {
     this.concurrentTests = true;
     return this;
   }
 
-  before<TOut>(before: BeforeInput<Combined, TOut>): TestEach<Combined> {
-    this.befores.push(before);
+  before<TOut>(before: BeforeInput<Combined, TOut>): TestEach<Combined, BeforeT & TOut> {
+    this.befores.push(before as any);
     return this as any;
   }
 
   // todo: defect addition
-  each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut> {
+  each<TOut>(cases: Input<Combined, TOut>): TestEach<Combined & TOut, BeforeT> {
     this.groups.push(cases as any);
     return this as any;
   }
@@ -89,21 +89,23 @@ export class TestEach<Combined = {}> {
   private runTest(
     testRunner: TestRunner,
     name: string,
-    body: (t: Combined) => void,
+    body: (t: Combined, b: BeforeT) => void,
     args?: Combined,
     isBefore?: boolean,
   ) {
     return testRunner(name, async () => {
       const beforeResults: Disposable[] = [];
+      let beforeResult: any = {};
       if (isBefore && this.befores.length > 0) {
         for (const b of this.befores) {
           const res = await b(args || ({} as any));
-          beforeResults.push(res); // todo catch
+          beforeResults.push(res);
+          beforeResult = { ...beforeResult, ...res };
         }
       }
 
       try {
-        await body(args || ({} as any));
+        await body(args || ({} as any), beforeResult);
       } finally {
         // after each
         beforeResults.forEach(p => p.dispose());
@@ -111,7 +113,7 @@ export class TestEach<Combined = {}> {
     });
   }
 
-  run(body: (each: Combined) => void) {
+  run(body: (each: Combined, before: BeforeT) => void) {
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
 
     const testRunner = this.onlyOne
@@ -170,10 +172,13 @@ export class TestEach<Combined = {}> {
       guard(!(this.groups.length === 0 && !this.desc), 'Test should have name when no cases');
     };
 
-    const runCase = (body: (each: Combined) => void) => (t: OneTest<Combined>, i: number) => {
+    const runCase = (body: (each: Combined, b: BeforeT) => void) => (
+      t: OneTest<Combined>,
+      i: number,
+    ) => {
       guard(!!t.name, 'Every case in .each should have not empty data');
       const name = entityName(i + 1, t.name);
-      this.runTest(testRunner, name, body, t.data, true); // todo;
+      this.runTest(testRunner, name, body, t.data, true);
     };
 
     const tests = () =>
@@ -192,7 +197,7 @@ export class TestEach<Combined = {}> {
       () => {
         suiteGuards();
         testIfOnly();
-        groupBySuites && !isFlat ? tests() : testsFlat();
+        groupBySuites && !isFlat && !this.onlyOne ? tests() : testsFlat();
       },
       this.desc,
     );

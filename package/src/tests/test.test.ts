@@ -88,17 +88,27 @@ describe('test examples', () => {
     //.only()
     .run(t => success());
 
-  its('Some test 2 ')
+  its('Before test')
     .each([{ a: '1' }, { a: '2' }])
     .each([{ b: '3' }, { b: '4' }])
     .before(t => {
       console.log('before each');
       return {
-        dispose: () => console.log('After Each'),
+        someResult: 'a',
+        dispose: () => console.log('After Each1'),
       };
     })
-    //.only()
-    .run(async t => {
+    .before(t => {
+      console.log('before each');
+      return {
+        someResult1: 'b',
+        dispose: () => console.log('After Each2'),
+      };
+    })
+    // .only()
+    .run(async (t, b) => {
+      expect(b.someResult).toBe('a');
+      expect(b.someResult1).toBe('b');
       await delay(100);
     });
 });

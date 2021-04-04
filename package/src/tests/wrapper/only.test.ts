@@ -23,15 +23,14 @@ describe('Test.only', () => {
     assertAll(
       () => expect(result.passes.length).toBe(1),
       () => expect(result.failures.length).toBe(1),
-      () => expect(result.totalEntities).toBe(4),
+      () => expect(result.totalEntities).toBe(3),
       () =>
         expect(result.suites).toMatchInlineSnapshot(`
           Array [
             "Test pack - root",
-            "a: 1",
           ]
         `),
-      () => expect(result.passes[0].name).toMatchInlineSnapshot(`"b: 3"`),
+      () => expect(result.passes[0].name).toMatchInlineSnapshot(`"a: 1, b: 3"`),
       () =>
         expect(result.failures[0].name).toMatchInlineSnapshot(
           `"only() should be removed before committing"`,
@@ -79,12 +78,12 @@ describe('Test.only', () => {
     assertAll(
       () => expect(result.passes.length).toBe(1),
       () => expect(result.failures.length).toBe(1),
-      () => expect(result.totalEntities).toBe(4),
+      () => expect(result.totalEntities).toBe(3),
       () =>
         expect(result.passes).toMatchInlineSnapshot(`
           Array [
             Object {
-              "name": "b: 4",
+              "name": "a: 1, b: 4",
             },
           ]
         `),
