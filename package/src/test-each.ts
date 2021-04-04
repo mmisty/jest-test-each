@@ -12,15 +12,16 @@ import {
 
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
+type WithDefect = { defect?: string };
 
-type InputCaseType<T> = T & WithDesc & WithFlatDesc; // WithDesc => should have field in type for further union
+type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & WithDefect; // WithDesc => should have field in type for further union
 type Disposable = { dispose?: () => void };
-type SimpleCase<T> = InputCaseType<T> | WithComplexDesc<T>;
-type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo
+type SimpleCase<T> = InputCaseType<T>;
+type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo desc as func doesn't work for cases as func
 type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
 
 type DescFunc<T> = (k: T) => string;
-type WithComplexDesc<T> = { desc?: string | DescFunc<T> } & WithFlatDesc;
+type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
 type OnlyInput<T> = (t: T) => boolean;
 
 type Before<T> = T & Disposable;
@@ -77,15 +78,6 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this as any;
   }
 
-  private filterOnly(testRunner: TestRunner): Combined[][] {
-    return this.onlyOneFilter
-      ? this.groups.map((p, i) => {
-          const filtered = p.filter(k => this.onlyOneFilter?.(k));
-          return [filtered.length === 0 ? p[0] : filtered[0]];
-        })
-      : this.groups.map(p => [p[0]]);
-  }
-
   private runTest(
     testRunner: TestRunner,
     name: string,
@@ -93,25 +85,55 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     args?: Combined,
     isBefore?: boolean,
   ) {
-    return testRunner(name, async () => {
-      const beforeResults: Disposable[] = [];
-      let beforeResult: any = {};
-      if (isBefore && this.befores.length > 0) {
-        for (const b of this.befores) {
-          const res = await b(args || ({} as any));
-          beforeResults.push(res);
-          beforeResult = { ...beforeResult, ...res };
+    const markedDefect = (args as SimpleCase<Combined>)?.defect;
+    const defectTestName = markedDefect ? ` - Marked with defect '${markedDefect}'` : '';
+    const testName = markedDefect
+      ? name.replace(/(, )?defect\:.*(,|$)/, '') + defectTestName
+      : name;
+
+    return testRunner(testName, async () => {
+      if (markedDefect) {
+        // if it passes -> fail
+        // if it fails -> skip
+        try {
+          await this.runBody(body, args, isBefore);
+        } catch (e) {
+          this.env.pending(
+            `Test marked with defect '${markedDefect}': Actual fail reason:\n ${e.message}`,
+          );
+          return;
         }
+
+        throw new Error(`Test marked with defect but doesn't fail`);
       }
 
-      try {
-        await body(args || ({} as any), beforeResult);
-      } finally {
-        // after each
-        beforeResults.forEach(p => (p.dispose ? p.dispose() : {}));
-      }
+      await this.runBody(body, args, isBefore);
     });
   }
+
+  private async runBody(
+    body: (t: Combined, b: BeforeT) => void,
+    args?: Combined,
+    isBefore?: boolean,
+  ) {
+    const beforeResults: Disposable[] = [];
+    let beforeResult: any = {};
+    if (isBefore && this.befores.length > 0) {
+      for (const b of this.befores) {
+        const res = await b(args || ({} as any));
+        beforeResults.push(res);
+        beforeResult = { ...beforeResult, ...res };
+      }
+    }
+
+    try {
+      await body(args || ({} as any), beforeResult);
+    } finally {
+      // after each
+      beforeResults.forEach(p => (p.dispose ? p.dispose() : {}));
+    }
+  }
+
   private entityName = (num: number, name: string) => {
     return `${this.conf.numericCases ? num + '. ' : ''}${name}`;
   };

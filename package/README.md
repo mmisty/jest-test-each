@@ -116,12 +116,12 @@ TestEachEnv({
 - [x] ability to have flat tests cases (not groupped to suites) when each case has 'flatDesc'
 - [x] global var 'Test' (or 'its' alias) to access test each (I'm accepting suggestions on namings)
 - [x] ability to run without single .each (`its('foo').run(..)`)
-- [x] To run one test from TestEach like it.only (`.only(<filter>)`)
-- [x] ability to run '.before' in testEach with disposable interface for automatic cleanup
+- [x] To run one test from TestEach like it.only (`.only(<filter>)`) - [example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.only.test.ts).
+- [x] ability to run '.before' in testEach with disposable interface for automatic cleanup - [example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.before.test.ts).
+- [x] ability to skip test if it is marked with defect - [example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.defect.test.ts).
 - [ ] To start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
 
 ## What's next
 
 - [ ] add '.ensureCases' to testEach with to check case num with inlineSnapshot
 - [ ] do not create suite wrapping when only one test in the group
-- [ ] add ability to skip test if it is marked by defect

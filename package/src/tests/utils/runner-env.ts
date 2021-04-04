@@ -53,6 +53,7 @@ const suiteRunner: Runner = (name: string, body: () => void) => {
   result.suites.push(name);
   body();
 };
+
 export const waitFinished = async () => {
   for (let i = 0; i < 1000; i++) {
     if (started.s.length === 0) {
@@ -61,6 +62,7 @@ export const waitFinished = async () => {
     await delay(1);
   }
 };
+
 const testRunner = ((name: string, body: () => Promise<void>) => {
   // console.log('Test started: ' + name);
   started.s.push(name);
@@ -102,6 +104,10 @@ const testRunner = ((name: string, body: () => Promise<void>) => {
 testRunner.only = testRunner;
 testRunner.concurrent = testRunner;
 
+const pending = (reason?: string) => {
+  // todo
+};
+
 const testRunnerEnv: Env = {
   describe: suiteRunner,
   it: testRunner,
@@ -109,6 +115,7 @@ const testRunnerEnv: Env = {
   beforeAll,
   afterEach,
   afterAll,
+  pending,
 };
 
 export const createTest = (desc?: string) => TestEachTesting(testRunnerEnv)(desc);

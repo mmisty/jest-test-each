@@ -16,4 +16,5 @@ export type Env = {
   beforeEach: BeforeAfter; // not used in test-each for now
   afterEach: BeforeAfter; // not used in test-each for now
   afterAll: BeforeAfter; // not used in test-each for now
+  pending: (reason?: string) => void;
 };
