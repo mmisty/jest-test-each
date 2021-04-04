@@ -24,7 +24,7 @@ describe('Test with defect', () => {
           "failures": Array [
             Object {
               "message": "Test doesn't fail but marked with defect",
-              "name": "a: 1, expected: 1 - Marked with defect 'some'",
+              "name": "a: 1, expected: 1, defect: some - Marked with defect",
             },
           ],
           "passes": Array [],
@@ -33,7 +33,7 @@ describe('Test with defect', () => {
             "Test pack - root",
           ],
           "tests": Array [
-            "a: 1, expected: 1 - Marked with defect 'some'",
+            "a: 1, expected: 1, defect: some - Marked with defect",
           ],
           "totalEntities": 2,
         }
@@ -55,12 +55,11 @@ describe('Test with defect', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "a: 1, expected: 0 - Marked with defect 'some'",
+              "name": "a: 1, expected: 0, defect: some - Marked with defect",
             },
           ],
           "skips": Array [
-            "Test marked with defect 'some': Actual fail reason:
-         expect(received).toBe(expected) // Object.is equality
+            "Test marked with defect 'some': Actual fail reason:\\\\n expect(received).toBe(expected) // Object.is equality
 
         Expected: \\"0\\"
         Received: \\"1\\"",
@@ -69,7 +68,7 @@ describe('Test with defect', () => {
             "Test pack - root",
           ],
           "tests": Array [
-            "a: 1, expected: 0 - Marked with defect 'some'",
+            "a: 1, expected: 0, defect: some - Marked with defect",
           ],
           "totalEntities": 2,
         }

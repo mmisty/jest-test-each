@@ -151,6 +151,21 @@ describe('test examples', () => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
 
+  its('Defected test with reasons')
+    .each([
+      { input: 0, expected: '0' },
+      {
+        input: 102.99998,
+        expected: '104',
+        defect: 'Rounding Error',
+        actualFailReasonParts: ['Expected: "104"', 'Received: "103"'],
+      },
+    ])
+    // .only(t=> t.expected==='104')
+    .run(t => {
+      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+    });
+
   its('Ensure cases')
     .each([
       { input: 0, expected: '0' },
@@ -168,6 +183,17 @@ describe('test examples', () => {
     )
     .ensureCasesLength(a => a.toMatchInlineSnapshot(`3`))
     // .only()
+    .run(t => {
+      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+    });
+
+  its('Skip cases')
+    .skip('Some reason')
+    .each([
+      { input: 0, expected: '0' },
+      { input: 102.99998, expected: '103' },
+      { input: 10, expected: '10' },
+    ])
     .run(t => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });

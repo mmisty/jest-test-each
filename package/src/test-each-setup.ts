@@ -23,7 +23,7 @@ export const testConfigDefault: TestSetupType = {
   numericCases: true,
   groupBySuites: true,
   concurrent: false,
-  maxTestNameLength: 100,
+  maxTestNameLength: 200,
 };
 
 export const testConfig: { config: TestSetupType } = {

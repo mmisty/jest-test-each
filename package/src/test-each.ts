@@ -11,9 +11,11 @@ import {
 } from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
 
+const stripAnsi = require('strip-ansi');
+
 type WithDesc = { desc?: string };
 type WithFlatDesc = { flatDesc?: string };
-type WithDefect = { defect?: string };
+type WithDefect = { defect?: string; actualFailReasonParts?: string[] };
 type WithSkip = { skip?: string };
 
 type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & WithDefect & WithSkip;
@@ -113,8 +115,11 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   ) {
     const skipped = (args as SimpleCase<Combined>)?.skip || this.skippedTest;
     const markedDefect = (args as SimpleCase<Combined>)?.defect || this.defectTest;
-    const defectTestName = markedDefect ? ` - Marked with defect '${markedDefect}'` : '';
-    const testName = markedDefect ? name.replace(/(, )?defect:.*(,|$)/, '') + defectTestName : name;
+    const defectTestName = markedDefect ? ` - Marked with defect` : '';
+    const testName = markedDefect ? name + defectTestName : name;
+    //? name.replace(/(, )?defect\:\s*('|"|`)[^'"`]*('|"|`)/, '') + defectTestName
+
+    const reasons = (args as SimpleCase<Combined>)?.actualFailReasonParts;
 
     return testRunner(testName, async () => {
       if (skipped) {
@@ -127,10 +132,25 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         // if it fails -> skip
         try {
           await this.runBody(body, args, isBefore);
-        } catch (e) {
-          this.env.pending(
-            `Test marked with defect '${markedDefect}': Actual fail reason:\n ${e.message}`,
-          );
+        } catch (err) {
+          const alignedMessage = stripAnsi(err.message);
+          const markPending = () => {
+            this.env.pending(
+              `Test marked with defect '${markedDefect}': Actual fail reason:\\n ${alignedMessage}`,
+            );
+          };
+          // check reasons
+          if (reasons) {
+            if (reasons.every(r => alignedMessage.includes(r))) {
+              markPending();
+              return;
+            }
+
+            throw new Error(
+              `Actual fail reason doesn't contain [${reasons}]\nActual fail reason:\n "${alignedMessage}"`,
+            );
+          }
+          markPending();
           return;
         }
 

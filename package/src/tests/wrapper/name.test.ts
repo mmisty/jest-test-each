@@ -50,9 +50,21 @@ describe('naming', () => {
       expName: undefined,
     },
     {
-      desc: 'long name - err',
+      desc: 'long name - default err',
       case: {
         simple: [
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 11 } },
+          { el: 3 },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 11 } },
+          { el: 3 },
           { el: { inside: 5 } },
           { el: { inside: 5 } },
           { el: { inside: 5 } },
@@ -62,7 +74,7 @@ describe('naming', () => {
         ],
       },
       expFail: true,
-      error: `Case name is too long (>100 symbols), please specify 'desc'`,
+      error: `Case name is too long (>200 symbols), please specify 'desc'`,
     },
     {
       desc: 'long name with desc',

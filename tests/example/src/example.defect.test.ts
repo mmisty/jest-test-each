@@ -34,4 +34,17 @@ describe(`Test with 'defect' example`, () => {
     .run(t => {
       throw new Error('not implemented');
     });
+
+  its('Defect test with reasons')
+    .each([
+      {
+        input: 10,
+        expected: '12',
+        defect: 'Rounding Error Example',
+        actualFailReasonParts: ['Expected: "12"', 'Received: "10"'],
+      },
+    ])
+    .run(t => {
+      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+    });
 });
