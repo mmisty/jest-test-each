@@ -1,9 +1,21 @@
 import { Env } from './test-env';
 
 export type TestSetupType = {
-  numericCases: boolean; // number suites and case in each suite
-  groupBySuites: boolean; // group tests by suites when cases multiplication
-  concurrent: boolean; // run tests concurrently
+  /**
+   * Number suites and cases in each suite
+   */
+  numericCases: boolean;
+  /**
+   * Group tests by suites when cases are multiplied
+   */
+  groupBySuites: boolean;
+  /**
+   * Run tests concurrently (for jest -> it.concurrent)
+   */
+  concurrent: boolean;
+  /**
+   * Max length of case name - on reaching it will ask to sepcify explicit description for case
+   */
   maxTestNameLength: number;
 };
 

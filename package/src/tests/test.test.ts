@@ -46,6 +46,7 @@ describe('test examples', () => {
       },
       { input: -6, expected: '-6' },
     ])
+    .each(t => [{ abc: '1', desc: (k: { abc: string }) => k.abc }]) // todo
     .run(t => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
