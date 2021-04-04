@@ -1,8 +1,8 @@
-import { cleanup, createTest, result } from '../utils/runner-env';
+import { cleanup, createTest, result, waitFinished } from '../utils/runner-env';
 import { assertAll, success } from '../utils/utils';
 
 const rootName = 'Test pack - root';
-const test = createTest(rootName);
+const test = () => createTest(rootName);
 const config = { groupBySuites: true, numericCases: false };
 
 describe('Error handling', () => {
@@ -12,7 +12,7 @@ describe('Error handling', () => {
 
   it('should throw when no name and cases', async () => {
     const r = () =>
-      createTest()()
+      createTest()
         .config(config)
         .run(t => success());
 
@@ -22,9 +22,11 @@ describe('Error handling', () => {
   });
 
   it('should NOT throw when name and no cases', async () => {
-    await test()
+    test()
       .config(config)
       .run(t => success());
+
+    await waitFinished();
 
     assertAll(
       () => expect(result.passes.length).toBe(1),

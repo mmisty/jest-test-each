@@ -1,9 +1,9 @@
-import { cleanup, createTest, result } from '../utils/runner-env';
+import { cleanup, createTest, result, waitFinished } from '../utils/runner-env';
 import { assertAll, success } from '../utils/utils';
 
 const rootName = 'Test pack - root';
-const test = createTest(rootName);
-const config = { groupBySuites: true, numericCases: false };
+const test = () => createTest(rootName);
+const config = { groupBySuites: true, numericCases: false, concurrent: false };
 
 describe('Test.only', () => {
   beforeEach(() => {
@@ -11,12 +11,14 @@ describe('Test.only', () => {
   });
 
   it('should be 2 tests and one should fail when test.only', async () => {
-    await test()
+    test()
       .config(config)
       .each([{ a: '1' }, { a: '2' }])
       .each([{ b: '3' }, { b: '4' }])
       .only()
       .run(t => success());
+
+    await waitFinished();
 
     assertAll(
       () => expect(result.passes.length).toBe(1),
@@ -38,12 +40,14 @@ describe('Test.only', () => {
   });
 
   it('should fail when test.only and case is not found', async () => {
-    await test()
+    test()
       .config(config)
       .each([{ a: '1' }, { a: '2' }])
       .each([{ b: '3' }, { b: '4' }])
       .only(t => t.a === '3')
       .run(t => success());
+
+    await waitFinished();
 
     assertAll(
       () => expect(result.passes.length).toBe(0),
@@ -63,12 +67,14 @@ describe('Test.only', () => {
   });
 
   it('should pass when test.only and case is found', async () => {
-    await test()
+    test()
       .config(config)
       .each([{ a: '1' }, { a: '2' }])
       .each([{ b: '3' }, { b: '4' }])
       .only(t => t.b === '4')
       .run(t => success());
+
+    await waitFinished();
 
     assertAll(
       () => expect(result.passes.length).toBe(1),
@@ -86,10 +92,12 @@ describe('Test.only', () => {
   });
 
   it('should fail when no cases and test.only', async () => {
-    await test()
+    test()
       .config(config)
       .only()
       .run(t => success());
+
+    await waitFinished();
 
     assertAll(
       () => expect(result.passes.length).toBe(1),
@@ -108,7 +116,6 @@ describe('Test.only', () => {
         expect(result.failures[0].name).toMatchInlineSnapshot(
           `"only() should be removed before committing"`,
         ),
-      () => expect(result.passes[0].name).toMatchInlineSnapshot(`"Test pack - root"`),
     );
   });
 });

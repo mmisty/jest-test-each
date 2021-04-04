@@ -1,9 +1,9 @@
-import { cleanup, createTest, result } from '../utils/runner-env';
+import { cleanup, createTest, result, waitFinished } from '../utils/runner-env';
 import { assertAll } from '../utils/utils';
 import { TestEachSetup } from '../../index';
 
 const rootName = 'Test pack - root';
-const test = createTest(rootName);
+const test = () => createTest(rootName);
 
 describe('Configuration', () => {
   beforeEach(() => {
@@ -23,12 +23,14 @@ describe('Configuration', () => {
     }`, async () => {
       TestEachSetup({ groupBySuites: true, numericCases: c.isNum });
 
-      await test()
+      test()
         .each([{ something: 'a' }, { something: 'ab' }])
         .run(t => {
           expect(t.something).toBe('ab');
         });
       const num = (n: number) => (c.isNum ? `${n}. ` : '');
+
+      await waitFinished();
 
       assertAll(
         () => expect(result.suites).toEqual([rootName]),
@@ -43,7 +45,7 @@ describe('Configuration', () => {
     }`, async () => {
       TestEachSetup({ groupBySuites: true, numericCases: c.isNum });
 
-      await test()
+      test()
         .each([{ something: 'a' }, { something: 'ab' }])
         .each([{ foo: 'a' }, { foo: 'ab' }])
         .each([{ last: 'a' }, { last: 'b' }, { last: 'c' }])
@@ -51,6 +53,8 @@ describe('Configuration', () => {
           expect(1).toBe(1);
         });
       const num = (n: number) => (c.isNum ? `${n}. ` : '');
+
+      await waitFinished();
 
       assertAll(() =>
         expect(result.suites).toEqual([
@@ -67,13 +71,15 @@ describe('Configuration', () => {
   });
 
   describe('using configuration for each test', () => {
-    const testFunc = (num: boolean) =>
+    const testFunc = async (num: boolean) => {
       test()
         .config({ numericCases: num })
         .each([{ something: 'a' }, { something: 'ab' }])
         .run(t => {
           expect(t.something).toBe('ab');
         });
+      await waitFinished();
+    };
 
     it('numeric', async () => {
       await testFunc(true);

@@ -77,8 +77,28 @@ describe('test examples', () => {
     });
 
   its('Only one test without cases')
-    // .only() // this could not be committed as far as guard is implemented
+    //.only() // this could not be committed as far as guard is implemented
     .run(t => {
       success();
+    });
+
+  its('Some test')
+    .each([{ a: '1' }, { a: '2' }])
+    .each([{ b: '3' }, { b: '4' }])
+    //.only()
+    .run(t => success());
+
+  its('Some test 2 ')
+    .each([{ a: '1' }, { a: '2' }])
+    .each([{ b: '3' }, { b: '4' }])
+    .before(t => {
+      console.log('before each');
+      return {
+        dispose: () => console.log('After Each'),
+      };
+    })
+    //.only()
+    .run(async t => {
+      await delay(100);
     });
 });
