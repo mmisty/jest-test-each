@@ -11,13 +11,20 @@ export const getName = <T>(obj: T, maxLength: number): { name: string; code?: Co
   const flatDesc = untypedObj.flatDesc;
   let code: CodeRename | undefined = undefined;
 
-  if (!objHasNoFunctions(obj) && !desc) {
+  if (hasFunction(obj) && !desc) {
     code = CODE_RENAME.nameHasFunctions;
   }
 
-  const result =
-    flatDesc ||
-    (desc ? (typeof desc === 'function' ? desc(untypedObj) : desc) : getNameInt(untypedObj));
+  const res = () => {
+    if (!flatDesc && !desc) {
+      delete untypedObj.desc;
+      return getNameInt(untypedObj);
+    }
+
+    return flatDesc || (typeof desc === 'function' ? desc(untypedObj) : desc);
+  };
+
+  const result = res();
 
   if (result.length > maxLength) {
     code = CODE_RENAME.nameTooLong;
@@ -27,63 +34,50 @@ export const getName = <T>(obj: T, maxLength: number): { name: string; code?: Co
 };
 
 const isSimple = (obj: any) => {
-  return typeof obj === 'string' || typeof obj === 'number';
-};
-
-export const addQuotes = (str: string | number): string | number => {
-  if (typeof str === 'number') {
-    return str;
-  }
-  const newStr = str.toString().replace(/"|'/g, '');
-  const match = newStr.match(/^[\w\d]+$/g);
-  return match && match.length > 0 ? newStr : `'${newStr}'`;
+  return !obj || typeof obj === 'string' || typeof obj === 'number';
 };
 
 const getNameInt = (obj: any): string => {
-  const joinSymbol = ', ';
-  return Object.getOwnPropertyNames(obj)
-    .filter(p => p !== 'desc')
-    .map(p => {
-      if (Array.isArray(obj[p])) {
-        return `${p}: [${obj[p]
-          .map((k: any) => (isSimple(k) ? addQuotes(k) : getNameInt(k)))
-          .join(joinSymbol)}]`;
-      }
+  let allowedToReplaceNull = true;
+  if (JSON.stringify(obj).includes('null')) {
+    allowedToReplaceNull = false;
+  }
 
-      if (typeof obj[p] === 'function') {
-        return `${p}: function`;
-      }
+  let result = JSON.stringify(obj, (k, v) => {
+    if (typeof v === 'function') {
+      return 'function';
+    }
+    if (v === undefined) {
+      return null;
+    }
+    return v;
+  });
+  result = result
+    .replace(/^\{(.*)\}$/, '$1')
+    .replace(/"([\w\d]+)":/g, '$1: ') // prop names
+    .replace(/:\s*"([\d\w]+)"/g, ': $1')
+    .replace(/(,|{)/g, '$1 ')
+    .replace(/}/g, ' }')
+    .replace(/{\s*}/g, '{}')
+    .replace(/"/g, `'`);
 
-      if (typeof obj[p] === 'object') {
-        return `${p}: {${Object.getOwnPropertyNames(obj[p])
-          .map(k => (isSimple(obj[p][k]) ? `${addQuotes(k)}: ${obj[p][k]}` : getNameInt(obj[p][k])))
-          .join(joinSymbol)}}`;
-      }
+  if (allowedToReplaceNull) {
+    result = result.replace('null', 'undefined');
+  }
 
-      return `${p}: ${addQuotes(obj[p])}`;
-    })
-    .join(joinSymbol);
+  // todo fix array [{...}]
+  /*const template = /\[{([^}]*)}(,\s*{([^}]*)})*\]/g;
+  const match = template.exec(result);
+  if(match && match.length>0){
+    
+    const p =  match.slice(1).join(', ');
+    return p;
+  }*/
+  return result;
 };
 
-export const objHasNoFunctions = (obj: any, result: boolean = false): boolean => {
-  return (
-    typeof obj === 'function' ||
-    Object.keys(obj)
-      .filter(k => k !== 'desc')
-      .every(p => {
-        if (typeof obj[p] === 'function') {
-          return false;
-        }
-
-        if (isSimple(obj[p])) {
-          return true;
-        }
-
-        if (Array.isArray(obj[p])) {
-          return obj[p].every((k: any) => (isSimple(k) ? k : objHasNoFunctions(k)));
-        }
-
-        return objHasNoFunctions(obj[p], result);
-      })
-  );
+export const hasFunction = (obj: any): boolean => {
+  let hasFunction = false;
+  JSON.stringify(obj, (k, v) => (typeof v === 'function' ? (hasFunction = true) : v));
+  return hasFunction;
 };

@@ -18,12 +18,12 @@ describe('naming', () => {
     {
       desc: 'complex array',
       case: { simple: [{ el: 1 }, { el: 2 }, { el: 3 }] },
-      expName: 'simple: [el: 1, el: 2, el: 3]',
+      expName: 'simple: [{ el: 1 }, { el: 2 }, { el: 3 }]',
     },
     {
       desc: 'more complex array',
       case: { simple: [{ el: { inside: 5 } }, { el: { inside: 11 } }, { el: 3 }] },
-      expName: 'simple: [el: {inside: 5}, el: {inside: 11}, el: 3]',
+      expName: 'simple: [{ el: { inside: 5 } }, { el: { inside: 11 } }, { el: 3 }]',
     },
 
     {
@@ -114,12 +114,35 @@ describe('naming', () => {
     {
       desc: 'string containing quotes',
       case: { simple: `some "quotes": to be defined` },
-      expName: "simple: 'some quotes: to be defined'",
+      expName: "simple: 'some \\'quotes\\': to be defined'",
     },
     {
-      desc: 'string containing quotes',
-      case: { simple: `some "quotes": to be defined` },
-      expName: "simple: 'some quotes: to be defined'",
+      desc: 'undefined obj',
+      case: { simple: undefined },
+      expName: 'simple: undefined',
+    },
+    {
+      desc: 'undefined obj with null',
+      case: { simple: undefined, someString: 'null should be ...' },
+      expName: `simple: null, someString: 'null should be ...'`,
+    },
+    {
+      desc: 'undefined complex obj',
+      case: { simple: { some: undefined, some2: 'dsdsd' } },
+      expName: 'simple: { some: undefined, some2: dsdsd }',
+    },
+    {
+      desc: 'array with undefined complex obj',
+      case: {
+        googles: {
+          some34: [{ a: undefined }, { b: 'ok' }],
+          some2: 'dsdsd',
+          some4: 'wor1 word3 sas',
+          some3: 'word',
+        },
+        arr: [1, 2, 3],
+      },
+      expName: `googles: { some34: [{ a: undefined }, { b: ok }], some2: dsdsd, some4: 'wor1 word3 sas', some3: word }, arr: [1, 2, 3]`,
     },
   ];
 
