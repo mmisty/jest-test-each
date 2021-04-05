@@ -89,7 +89,7 @@ for .ts tests to see globals 'its' and 'Test' add the following to your tsconfig
   ]
 ```
 
-#### Additional
+#### Additional [optional]
 
 You can override test runner environment (by default it is jest env) by the following:
 
