@@ -267,6 +267,4 @@ describe('Test.before', () => {
         `),
     );
   });
-
-  // todo check async before
 });
