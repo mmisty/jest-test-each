@@ -5,6 +5,7 @@ type OneTest<T> = {
   desc: string | ((k: OneTest<T>) => string);
   flatDesc?: string;
   data: T;
+  failCode?: any; //todo
 };
 
 type Node<T> = {
@@ -17,8 +18,9 @@ type Node<T> = {
 
 const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Node<T> => {
   //const objData = typeof obj === 'string' ? {} :obj;
+  const name = getName(obj, maxTestNameLength);
   return {
-    name: getName(obj, maxTestNameLength),
+    name: name.name,
     children: [],
     data: obj || {},
     previousData: { ...parent?.previousData, ...obj },
@@ -40,10 +42,13 @@ const createTree = <T = {}>(levels: T[][], maxTestNameLength: number): Node<T> =
         // last level
 
         newCases.forEach((p: T) => {
+          const name = getName(p, maxTestNameLength);
+
           node.tests.push({
-            name: getName(p, maxTestNameLength),
-            desc: (p as any).desc || getName(p, maxTestNameLength),
+            name: name.name,
+            desc: (p as any).desc || name.name,
             data: { ...node.previousData, ...p },
+            failCode: name.code,
           });
         });
         return;

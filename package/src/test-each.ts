@@ -1,6 +1,6 @@
 import { guard } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
-import { getName } from './utils/name';
+import { CODE_RENAME, CodeRename, getName } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
 import {
   testConfig,
@@ -29,7 +29,7 @@ type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
 type OnlyInput<T> = (t: T) => boolean;
 
 type Before<T> = T & Disposable;
-type BeforeInput<T, TOut> = (t: T) => Before<TOut>;
+type BeforeInput<T, TOut> = (t: T) => Promise<Before<TOut>> | Before<TOut>;
 
 export class TestEach<Combined = {}, BeforeT = {}> {
   private groups: Combined[][] = [];
@@ -191,8 +191,18 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   private runCase(testRunner: TestRunner, body: (each: Combined, b: BeforeT) => void) {
     return (t: OneTest<Combined>, i: number) => {
       guard(!!t.name, 'Every case in .each should have not empty data');
+
       const name = this.entityName(i + 1, t.name);
-      this.runTest(testRunner, name, body, t.data, true);
+      this.runTest(
+        testRunner,
+        name,
+        async (args, b) => {
+          guard(!t.failCode, messageFromRenameCode(t.failCode, this.conf.maxTestNameLength));
+          await body(args, b);
+        },
+        t.data,
+        true,
+      );
     };
   }
 
@@ -218,10 +228,13 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     const root = createTree(this.groups, maxTestNameLength);
 
     treeWalk(root, undefined, t => {
+      const name = getName(t.data, maxTestNameLength);
+
       allCases.push({
         ...t,
-        name: getName(t.data, maxTestNameLength),
+        name: name.name,
         flatDesc: (t.data as SimpleCase<Combined>).flatDesc,
+        failCode: name.code,
       });
     });
 
@@ -305,4 +318,17 @@ const runSuite = (suiteRunner: Runner, callback: () => void, suiteName?: string)
     return;
   }
   callback();
+};
+
+const messageFromRenameCode = (code: CodeRename, maxLength: number) => {
+  switch (code) {
+    case CODE_RENAME.nameTooLong: {
+      return `Automatic test name is too long (>${maxLength}symbols). Please add 'desc' to case.`;
+    }
+    case CODE_RENAME.nameHasFunctions: {
+      return `Test case data has functions in it. Please add 'desc' to case.`;
+    }
+    default:
+      return 'unknown code';
+  }
 };

@@ -1,25 +1,59 @@
-export const getName = <T>(obj: T, maxLength: number): string => {
+export type CodeRename = 'NAME_TOO_LONG' | 'NAME_HAS_FUNCTIONS';
+export enum CODE_RENAME {
+  nameTooLong = 'NAME_TOO_LONG',
+  nameHasFunctions = 'NAME_HAS_FUNCTIONS',
+}
+export const getName = <T>(obj: T, maxLength: number): { name: string; code?: CodeRename } => {
+  // should not throw here
+
   const untypedObj = obj as any;
   const desc = untypedObj.desc;
   const flatDesc = untypedObj.flatDesc;
+  let code: CodeRename | undefined = undefined;
+
+  if (!objHasNoFunctions(obj) && !desc) {
+    code = CODE_RENAME.nameHasFunctions;
+  }
+
   const result =
     flatDesc || (desc ? (typeof desc === 'function' ? desc(obj) : desc) : getNameInt(obj));
 
   if (result.length > maxLength) {
-    throw new Error(`Case name is too long (>${maxLength} symbols), please specify 'desc'`);
+    code = CODE_RENAME.nameTooLong;
   }
 
-  return result;
+  return { name: result, code };
 };
 
 const isSimple = (obj: any) => {
   return typeof obj === 'string' || typeof obj === 'number';
 };
+type TooComplexObj = 'Too complex obj - specify desc';
 
-const getNameInt = (obj: any): string => {
-  if (typeof obj === 'function') {
-    throw new Error(`Too complex obj in test - please specify 'desc' for the case`);
-  }
+export const objHasNoFunctions = (obj: any, result: boolean = false): boolean => {
+  return (
+    typeof obj === 'function' ||
+    Object.keys(obj)
+      .filter(k => k !== 'desc')
+      .every(p => {
+        if (typeof obj[p] === 'function') {
+          return false;
+        }
+
+        if (isSimple(obj[p])) {
+          return true;
+        }
+
+        if (Array.isArray(obj[p])) {
+          return obj[p].every((k: any) => (isSimple(k) ? k : objHasNoFunctions(k)));
+        }
+
+        return objHasNoFunctions(obj[p], result);
+      })
+  );
+};
+
+const getNameInt = (obj: any): string | TooComplexObj => {
   const joinSymbol = ', ';
   return Object.getOwnPropertyNames(obj)
     .filter(p => p !== 'desc')
@@ -31,7 +65,7 @@ const getNameInt = (obj: any): string => {
       }
 
       if (typeof obj[p] === 'function') {
-        throw new Error(`Too complex obj in test - please specify 'desc' for the case`);
+        return `${p}: function`;
       }
 
       if (typeof obj[p] === 'object') {

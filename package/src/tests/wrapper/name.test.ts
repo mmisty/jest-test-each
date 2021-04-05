@@ -30,8 +30,7 @@ describe('naming', () => {
       desc: 'function inside',
       case: { simple: [{ el: { inside: 5 } }, { el: { inside: () => {} } }, { el: 3 }] },
       expFail: true,
-      error: `Too complex obj in test - please specify 'desc' for the case`,
-      expName: undefined,
+      error: `From guard: Test case data has functions in it. Please add 'desc' to case.`,
     },
     {
       desc: 'function inside with desc',
@@ -46,8 +45,7 @@ describe('naming', () => {
       desc: 'func simple',
       case: { func: () => {} },
       expFail: true,
-      error: `Too complex obj in test - please specify 'desc' for the case`,
-      expName: undefined,
+      error: `From guard: Test case data has functions in it. Please add 'desc' to case.`,
     },
     {
       desc: 'long name - default err',
@@ -74,13 +72,25 @@ describe('naming', () => {
         ],
       },
       expFail: true,
-      error: `Case name is too long (>200 symbols), please specify 'desc'`,
+      error: `From guard: Automatic test name is too long (>200symbols). Please add 'desc' to case.`,
     },
     {
       desc: 'long name with desc',
       case: {
         desc: 'long name',
         simple: [
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 11 } },
+          { el: 3 },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 5 } },
+          { el: { inside: 11 } },
+          { el: 3 },
           { el: { inside: 5 } },
           { el: { inside: 5 } },
           { el: { inside: 5 } },
@@ -95,41 +105,38 @@ describe('naming', () => {
 
   data.forEach(p => {
     it(p.desc, async () => {
-      let err1: Error | undefined = undefined;
-      try {
-        test()
-          .config(config)
-          .each([p.case as any])
-          .run(t => success());
+      test()
+        .config(config)
+        .each([p.case as any])
+        .run(t => success());
 
-        await waitFinished();
-      } catch (err) {
-        err1 = err;
-      }
+      await waitFinished();
 
       assertAll(
         !p.expFail
           ? () => expect(result.tests[0]).toBe(p.expName)
-          : () => expect(err1?.message).toBe(p.error),
+          : () => expect(result.failures[0].message).toBe(p.error),
       );
     });
   });
 
   it('case length configuration', async () => {
-    let err1: Error | undefined = undefined;
-    try {
-      test()
-        .config({ maxTestNameLength: 10 })
-        .each([{ a: 'supersupersuper' }])
-        .run(t => success());
+    test()
+      .config({ maxTestNameLength: 10 })
+      .each([{ a: 'supersupersuper' }])
+      .run(t => success());
 
-      await waitFinished();
-    } catch (err) {
-      err1 = err;
-    }
+    await waitFinished();
 
     assertAll(() =>
-      expect(err1?.message).toBe("Case name is too long (>10 symbols), please specify 'desc'"),
+      expect(result.failures).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "message": "From guard: Automatic test name is too long (>10symbols). Please add 'desc' to case.",
+            "name": "1. a: supersupersuper",
+          },
+        ]
+      `),
     );
   });
 });

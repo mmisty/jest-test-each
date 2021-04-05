@@ -1,5 +1,5 @@
 import { cleanup, createTest, result, waitFinished } from '../utils/runner-env';
-import { assertAll, success } from '../utils/utils';
+import { assertAll, delay, success } from '../utils/utils';
 
 const rootName = 'Test pack - root';
 const test = () => createTest(rootName);
@@ -207,6 +207,52 @@ describe('Test.before', () => {
               },
             ],
             "passes": Array [],
+            "skips": Array [],
+            "suites": Array [
+              "Test pack - root",
+              "a: 1",
+            ],
+            "tests": Array [
+              "b: 3",
+              "b: 4",
+            ],
+            "totalEntities": 4,
+          }
+        `),
+    );
+  });
+
+  it('should pass when .before is async', async () => {
+    test()
+      .config(config)
+      .each([{ a: '1' }])
+      .each([{ b: '3' }, { b: '4' }])
+      .before(async t => {
+        await delay(1);
+        return {
+          prop: 'some',
+        };
+      })
+      .run((t, b) => {
+        expect(b.prop).toBe('some');
+      });
+
+    await waitFinished();
+
+    assertAll(
+      () => expect(befores.disposed.length).toBe(0),
+      () =>
+        expect(result).toMatchInlineSnapshot(`
+          Object {
+            "failures": Array [],
+            "passes": Array [
+              Object {
+                "name": "b: 3",
+              },
+              Object {
+                "name": "b: 4",
+              },
+            ],
             "skips": Array [],
             "suites": Array [
               "Test pack - root",
