@@ -124,6 +124,28 @@ TestEachEnv({
 - [x] '.ensureCasesLength' to check cases length  - in case when .each has dynamic args and you don't want to miss some tests ([example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.ensure-length.test.ts)).
 - [x] ability to skip test
 
+### .only() usage
+
+See [example](https://github.com/mmisty/jest-test-each/blob/main/tests/example/src/example.only.test.ts).
+
+Running the feature containing this will result in 2 tests
+
+```javascript
+  its('Simple test: roundings')
+    .each([
+      { input: 0, expected: '0' },
+      { input: 0.99, expected: '1' },
+      { input: 102.99998, expected: '103' },
+      { input: -6, expected: '-6' },
+    ])
+    .only(t => t.input === -6)
+    .run(t => {
+      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+    });
+```
+
+![](https://github.com/mmisty/jest-test-each/blob/main/package/docs/only.png)
+
 ## What's next
 
 - [ ] do not create suite wrapping when resulted to only one test in the group
