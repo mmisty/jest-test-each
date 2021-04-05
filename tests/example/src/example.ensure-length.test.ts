@@ -12,7 +12,6 @@ describe('Test.ensureCasesLength() example', () => {
 
   const data = [{ cloths: 'black shirt' }, { cloths: 'blue shirt' }, { cloths: 'pink shirt' }];
 
-  // this test will fail if cases doesn't have 'shirt'
   its('Ensure cases length test')
     .each(data)
     .each(data)
