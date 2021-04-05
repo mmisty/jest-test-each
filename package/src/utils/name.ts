@@ -6,7 +6,7 @@ export enum CODE_RENAME {
 export const getName = <T>(obj: T, maxLength: number): { name: string; code?: CodeRename } => {
   // should not throw here
 
-  const untypedObj = obj as any;
+  const untypedObj = { ...(obj as any) };
   const desc = untypedObj.desc;
   const flatDesc = untypedObj.flatDesc;
   let code: CodeRename | undefined = undefined;
@@ -16,7 +16,8 @@ export const getName = <T>(obj: T, maxLength: number): { name: string; code?: Co
   }
 
   const result =
-    flatDesc || (desc ? (typeof desc === 'function' ? desc(obj) : desc) : getNameInt(obj));
+    flatDesc ||
+    (desc ? (typeof desc === 'function' ? desc(untypedObj) : desc) : getNameInt(untypedObj));
 
   if (result.length > maxLength) {
     code = CODE_RENAME.nameTooLong;
@@ -28,7 +29,41 @@ export const getName = <T>(obj: T, maxLength: number): { name: string; code?: Co
 const isSimple = (obj: any) => {
   return typeof obj === 'string' || typeof obj === 'number';
 };
-type TooComplexObj = 'Too complex obj - specify desc';
+
+export const addQuotes = (str: string | number): string | number => {
+  if (typeof str === 'number') {
+    return str;
+  }
+  const newStr = str.toString().replace(/"|'/g, '');
+  const match = newStr.match(/^[\w\d]+$/g);
+  return match && match.length > 0 ? newStr : `'${newStr}'`;
+};
+
+const getNameInt = (obj: any): string => {
+  const joinSymbol = ', ';
+  return Object.getOwnPropertyNames(obj)
+    .filter(p => p !== 'desc')
+    .map(p => {
+      if (Array.isArray(obj[p])) {
+        return `${p}: [${obj[p]
+          .map((k: any) => (isSimple(k) ? addQuotes(k) : getNameInt(k)))
+          .join(joinSymbol)}]`;
+      }
+
+      if (typeof obj[p] === 'function') {
+        return `${p}: function`;
+      }
+
+      if (typeof obj[p] === 'object') {
+        return `${p}: {${Object.getOwnPropertyNames(obj[p])
+          .map(k => (isSimple(obj[p][k]) ? `${addQuotes(k)}: ${obj[p][k]}` : getNameInt(obj[p][k])))
+          .join(joinSymbol)}}`;
+      }
+
+      return `${p}: ${addQuotes(obj[p])}`;
+    })
+    .join(joinSymbol);
+};
 
 export const objHasNoFunctions = (obj: any, result: boolean = false): boolean => {
   return (
@@ -51,30 +86,4 @@ export const objHasNoFunctions = (obj: any, result: boolean = false): boolean =>
         return objHasNoFunctions(obj[p], result);
       })
   );
-};
-
-const getNameInt = (obj: any): string | TooComplexObj => {
-  const joinSymbol = ', ';
-  return Object.getOwnPropertyNames(obj)
-    .filter(p => p !== 'desc')
-    .map(p => {
-      if (Array.isArray(obj[p])) {
-        return `${p}: [${obj[p]
-          .map((k: any) => (isSimple(k) ? k : getNameInt(k)))
-          .join(joinSymbol)}]`;
-      }
-
-      if (typeof obj[p] === 'function') {
-        return `${p}: function`;
-      }
-
-      if (typeof obj[p] === 'object') {
-        return `${p}: {${Object.getOwnPropertyNames(obj[p])
-          .map(k => (isSimple(obj[p][k]) ? `${k}: ${obj[p][k]}` : getNameInt(obj[p][k])))
-          .join(joinSymbol)}}`;
-      }
-
-      return `${p}: ${obj[p]}`;
-    })
-    .join(joinSymbol);
 };

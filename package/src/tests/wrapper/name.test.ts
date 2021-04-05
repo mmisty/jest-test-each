@@ -101,6 +101,26 @@ describe('naming', () => {
       },
       expName: 'long name',
     },
+    {
+      desc: 'string containing not only letters',
+      case: { simple: 'some description!!' },
+      expName: "simple: 'some description!!'",
+    },
+    {
+      desc: 'string containing only letters/numbers',
+      case: { simple: 'some3424' },
+      expName: 'simple: some3424',
+    },
+    {
+      desc: 'string containing quotes',
+      case: { simple: `some "quotes": to be defined` },
+      expName: "simple: 'some quotes: to be defined'",
+    },
+    {
+      desc: 'string containing quotes',
+      case: { simple: `some "quotes": to be defined` },
+      expName: "simple: 'some quotes: to be defined'",
+    },
   ];
 
   data.forEach(p => {

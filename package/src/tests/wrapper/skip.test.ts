@@ -25,7 +25,7 @@ describe('Test.skip', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "b: 4, skip: some reason",
+              "name": "b: 4, skip: 'some reason'",
             },
             Object {
               "name": "b: 3",
@@ -40,7 +40,7 @@ describe('Test.skip', () => {
           ],
           "tests": Array [
             "b: 3",
-            "b: 4, skip: some reason",
+            "b: 4, skip: 'some reason'",
           ],
           "totalEntities": 4,
         }
