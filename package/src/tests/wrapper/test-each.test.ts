@@ -10,6 +10,10 @@ describe('Test jest test each', () => {
     cleanup();
   });
 
+  // todo add when empty
+  // add map to each - additng defect to specific case
+  // if all failed = fail only one (setting)
+
   it('Pass and fail', async () => {
     test()
       .config(config)

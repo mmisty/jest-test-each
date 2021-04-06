@@ -22,6 +22,7 @@ type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & Wit
 type Disposable = { dispose?: () => void };
 type SimpleCase<T> = InputCaseType<T>;
 type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo desc as func doesn't work for cases as func
+type FuncOneCase<T, TOut> = (t: T) => SimpleCase<TOut>;
 type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
 
 type DescFunc<T> = (k: T) => string;
@@ -31,14 +32,18 @@ type OnlyInput<T> = (t: T) => boolean;
 type Before<T> = T & Disposable;
 type BeforeOut<T> = Promise<Before<T>> | Before<T>;
 type BeforeInput<T, TOut> = (t: T) => BeforeOut<TOut> | void;
-
+type Defect<T> = { reason: string; filter: OnlyInput<T> | undefined };
 export class TestEach<Combined = {}, BeforeT = {}> {
+  private additions: SimpleCase<{}>[] = [];
   private groups: Combined[][] = [];
   private befores: BeforeInput<Combined, BeforeT>[] = [];
   private ensures: { desc: string; check: (t: Combined[]) => void }[] = [];
   private ensuresCasesLength: ((t: JestMatchers<number>) => void)[] = [];
   private conf: TestSetupType;
-  private defectTest: string | undefined = undefined;
+
+  private defects: Defect<Combined>[] = [];
+  // private defectTestFilter: OnlyInput<Combined> | undefined = undefined;
+
   private skippedTest: string | undefined = undefined;
   private onlyOne: boolean = false;
   private concurrentTests: boolean = false;
@@ -87,8 +92,8 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this;
   }
 
-  defect(reason: string): TestEach<Combined, BeforeT> {
-    this.defectTest = reason;
+  defect(reason: string, input?: OnlyInput<Combined>): TestEach<Combined, BeforeT> {
+    this.defects.push({ reason: reason, filter: input });
     return this;
   }
 
@@ -99,6 +104,14 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
   before<TOut>(before: BeforeInput<Combined, TOut>): TestEach<Combined, BeforeT & TOut> {
     this.befores.push(before as any);
+    return this as any;
+  }
+
+  /**
+   * Will add specified object to each test case
+   */
+  add<TOut>(input: SimpleCase<TOut>): TestEach<Combined & TOut, BeforeT> {
+    this.additions.push(input as any);
     return this as any;
   }
 
@@ -115,7 +128,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     isBefore?: boolean,
   ) {
     const skipped = (args as SimpleCase<Combined>)?.skip || this.skippedTest;
-    const markedDefect = (args as SimpleCase<Combined>)?.defect || this.defectTest;
+    const markedDefect = (args as SimpleCase<Combined>)?.defect;
     const defectTestName = markedDefect ? ` - Marked with defect` : '';
     const testName = markedDefect ? name + defectTestName : name;
     //? name.replace(/(, )?defect\:\s*('|"|`)[^'"`]*('|"|`)/, '') + defectTestName
@@ -217,6 +230,19 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     }
   };
 
+  private addDefect = (data: Combined, defect: Defect<Combined>): any => {
+    const foundDefected = () => {
+      if (defect && defect.filter) {
+        const res = defect.filter(data);
+        return res === undefined ? false : res;
+      }
+      return false;
+    };
+
+    const isDefect = !defect.filter || foundDefected();
+    return isDefect ? { defect: defect.reason } : {};
+  };
+
   run(body: (each: Combined, before: BeforeT) => void) {
     const { groupBySuites, maxTestNameLength } = this.conf;
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
@@ -228,18 +254,42 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       : this.env.it;
     let allCases: OneTest<Combined>[] = [];
 
-    const root = createTree(this.groups, maxTestNameLength);
+    let additions = {};
+    this.additions.forEach(p => (additions = { ...additions, ...p }));
 
-    treeWalk(root, undefined, t => {
-      const name = getName(t.data, maxTestNameLength);
-
-      allCases.push({
-        ...t,
-        name: name.name,
-        flatDesc: (t.data as SimpleCase<Combined>).flatDesc,
-        failCode: name.code,
-      });
+    const root = createTree(this.groups, additions, maxTestNameLength, undefined, k => {
+      let defect = {};
+      const defectObjs = this.defects.map(defect =>
+        this.addDefect({ ...k.data, ...additions }, defect),
+      );
+      defectObjs.forEach(p => (defect = { ...defect, ...p }));
+      const name = getName({ ...additions, ...defect }, maxTestNameLength);
+      const name2 = getName({ ...k.data, ...additions, ...defect }, maxTestNameLength);
+      const newName = k.name + (name.name ? ', ' + name.name : '');
+      const case_ = {
+        ...k,
+        data: { ...k.data, ...additions, ...defect },
+        name: newName,
+        failCode: name2.code,
+      };
+      allCases.push({ ...case_, flatDesc: (case_.data as SimpleCase<Combined>).flatDesc });
+      return case_;
     });
+    
+    // run test showing that filter is incorrect
+    if (this.defects.length > 0) {
+      this.defects.forEach((defect, i) => {
+        const casesFound = allCases.filter(k => (defect.filter ? defect.filter(k.data) : true));
+
+        if (defect.filter && casesFound.length === 0) {
+          this.runTest(testRunner, 'Filtering defect returned no results ' + (i + 1), () => {
+            throw new Error('No such case: ' + defect.filter!.toString());
+          });
+
+          return;
+        }
+      });
+    }
 
     const runEnsures = () => {
       if (this.ensures.length > 0) {

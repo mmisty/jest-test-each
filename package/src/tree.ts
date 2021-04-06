@@ -27,8 +27,14 @@ const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Nod
     tests: [],
   };
 };
-
-const createTree = <T = {}>(levels: T[][], maxTestNameLength: number): Node<T> => {
+// todo any
+const createTree = <T = {}, K = {}>(
+  levels: T[][],
+  additions: K,
+  maxTestNameLength: number,
+  onEachNode?: ((c: Node<T>) => Node<T>) | undefined,
+  onEachTest?: ((t: OneTest<T>) => OneTest<T>) | undefined,
+): Node<T & K> => {
   const root = createNode({}, maxTestNameLength);
 
   const populateNodes = <K>(node: Node<K>, nextLevel: number = 0) => {
@@ -36,34 +42,39 @@ const createTree = <T = {}>(levels: T[][], maxTestNameLength: number): Node<T> =
       if (nextLevel !== levelNum) {
         continue;
       }
-      const newCases = typeof cases === 'function' ? (cases as any)(node.previousData) : cases;
+      const newCases =
+        typeof cases === 'function'
+          ? (cases as any)({ ...node.previousData, ...additions })
+          : cases;
 
       if (levelNum === levels.length - 1) {
         // last level
 
         newCases.forEach((p: T) => {
           const name = getName(p, maxTestNameLength);
-
-          node.tests.push({
+          const test_: OneTest<any> = {
             name: name.name,
             desc: (p as any).desc || name.name,
-            data: { ...node.previousData, ...p },
+            data: { ...node.previousData, ...p, ...additions },
             failCode: name.code,
-          });
+          };
+          const test = onEachTest ? onEachTest(test_) : test_;
+          node.tests.push(test as OneTest<any>);
         });
         return;
       } else {
         newCases.forEach((p: any) => {
-          const child = createNode(p, maxTestNameLength, node);
+          const child_ = createNode(p, maxTestNameLength, node);
+          const child = onEachNode ? onEachNode(child_) : child_;
           populateNodes(child, levelNum + 1);
-          node.children.push(child);
+          node.children.push(child as Node<any>);
         });
       }
     }
   };
 
   populateNodes(root);
-  return (root as any) as Node<T>;
+  return (root as any) as Node<T & K>;
 };
 
 const treeWalk = <T>(
