@@ -163,6 +163,79 @@ describe('naming', () => {
     });
   });
 
+  it('functions with desc in next each', async () => {
+    test()
+      .each([
+        {
+          a: () => {
+            return 1;
+          },
+        },
+      ])
+      .each([{ desc: 'description' }])
+      .run(t => success());
+
+    await waitFinished();
+
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+        Object {
+          "failures": Array [],
+          "passes": Array [
+            Object {
+              "name": "1. description",
+            },
+          ],
+          "skips": Array [],
+          "suites": Array [
+            "Test pack - root",
+            "1. a: function",
+          ],
+          "tests": Array [
+            "1. description",
+          ],
+          "totalEntities": 3,
+        }
+      `),
+    );
+  });
+
+  it('functions with flatDesc in next each', async () => {
+    test()
+      .each([
+        {
+          a: () => {
+            return 1;
+          },
+        },
+      ])
+      .each([{ flatDesc: 'sdsd' }])
+      .run(t => success());
+
+    await waitFinished();
+
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+        Object {
+          "failures": Array [],
+          "passes": Array [
+            Object {
+              "name": "1. sdsd",
+            },
+          ],
+          "skips": Array [],
+          "suites": Array [
+            "Test pack - root",
+          ],
+          "tests": Array [
+            "1. sdsd",
+          ],
+          "totalEntities": 2,
+        }
+      `),
+    );
+  });
+
   it('case length configuration', async () => {
     test()
       .config({ maxTestNameLength: 10 })

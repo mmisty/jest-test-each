@@ -11,7 +11,7 @@ export const getName = <T>(obj: T, maxLength: number): { name: string; code?: Co
   const flatDesc = untypedObj.flatDesc;
   let code: CodeRename | undefined = undefined;
 
-  if (hasFunction(obj) && !desc) {
+  if (hasFunction(obj) && !desc && !flatDesc) {
     code = CODE_RENAME.nameHasFunctions;
   }
 

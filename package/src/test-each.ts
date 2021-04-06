@@ -29,7 +29,8 @@ type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
 type OnlyInput<T> = (t: T) => boolean;
 
 type Before<T> = T & Disposable;
-type BeforeInput<T, TOut> = (t: T) => Promise<Before<TOut>> | Before<TOut>;
+type BeforeOut<T> = Promise<Before<T>> | Before<T>;
+type BeforeInput<T, TOut> = (t: T) => BeforeOut<TOut> | void;
 
 export class TestEach<Combined = {}, BeforeT = {}> {
   private groups: Combined[][] = [];
@@ -166,13 +167,15 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     args?: Combined,
     isBefore?: boolean,
   ) {
-    const beforeResults: Disposable[] = [];
+    const beforeResults: BeforeOut<any> = [];
     let beforeResult: any = {};
     if (isBefore && this.befores.length > 0) {
       for (const b of this.befores) {
         const res = await b(args || ({} as any));
-        beforeResults.push(res);
-        beforeResult = { ...beforeResult, ...res };
+        if (res instanceof Object) {
+          beforeResults.push(res);
+          beforeResult = { ...beforeResult, ...(res as BeforeOut<any>) };
+        }
       }
     }
 
@@ -180,7 +183,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       await body(args || ({} as any), beforeResult);
     } finally {
       // after each
-      beforeResults.forEach(p => (p.dispose ? p.dispose() : {}));
+      beforeResults.forEach((p: any) => (p.dispose ? p.dispose() : {}));
     }
   }
 

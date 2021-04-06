@@ -267,4 +267,45 @@ describe('Test.before', () => {
         `),
     );
   });
+
+  it('should pass when .before returns void', async () => {
+    test()
+      .config(config)
+      .each([{ a: '1' }])
+      .each([{ b: '3' }, { b: '4' }])
+      .before(t => {})
+      .run((t, b) => {
+        expect(b).toMatchObject({});
+      });
+
+    await waitFinished();
+
+    assertAll(
+      () => expect(befores.disposed.length).toBe(0),
+      () =>
+        expect(result).toMatchInlineSnapshot(`
+          Object {
+            "failures": Array [],
+            "passes": Array [
+              Object {
+                "name": "b: 3",
+              },
+              Object {
+                "name": "b: 4",
+              },
+            ],
+            "skips": Array [],
+            "suites": Array [
+              "Test pack - root",
+              "a: 1",
+            ],
+            "tests": Array [
+              "b: 3",
+              "b: 4",
+            ],
+            "totalEntities": 4,
+          }
+        `),
+    );
+  });
 });
