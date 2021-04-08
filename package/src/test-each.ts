@@ -333,7 +333,6 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       return testCase;
     });
 
-    this.runIsDefectExist(testRunner, allCases);
     const isFlat = allCases.every(p => p.flatDesc);
 
     if (this.onlyOne) {
@@ -373,6 +372,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         if (!this.onlyOne) {
           this.runEnsures(testRunner, allCases);
         }
+        this.runIsDefectExist(testRunner, allCases);
         this.testIfOnly(testRunner);
         groupBySuites && !isFlat && !this.onlyOne ? tests() : testsFlat();
       },
