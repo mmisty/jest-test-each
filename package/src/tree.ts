@@ -1,11 +1,11 @@
-import { getName } from './utils/name';
+import { getName, NameResult } from './utils/name';
 
 type OneTest<T> = {
-  name: string;
+  name: NameResult;
   desc: string | ((k: OneTest<T>) => string);
   flatDesc?: string;
   data: T;
-  failCode?: any; //todo
+  partialData: T;
 };
 
 type Node<T> = {
@@ -42,21 +42,17 @@ const createTree = <T = {}, K = {}>(
       if (nextLevel !== levelNum) {
         continue;
       }
-      const newCases =
-        typeof cases === 'function'
-          ? (cases as any)({ ...node.previousData, ...additions })
-          : cases;
+      const previousData = { ...node.previousData, ...additions };
+      const newCases = typeof cases === 'function' ? (cases as any)(previousData) : cases;
 
       if (levelNum === levels.length - 1) {
-        // last level
-
         newCases.forEach((p: T) => {
           const name = getName(p, maxTestNameLength);
           const test_: OneTest<any> = {
-            name: name.name,
+            name: name,
             desc: (p as any).desc || name.name,
-            data: { ...node.previousData, ...p, ...additions },
-            failCode: name.code,
+            data: { ...previousData, ...p },
+            partialData: p,
           };
           const test = onEachTest ? onEachTest(test_) : test_;
           node.tests.push(test as OneTest<any>);

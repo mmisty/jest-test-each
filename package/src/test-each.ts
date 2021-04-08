@@ -1,6 +1,6 @@
 import { guard, mergeIntoOne } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
-import { CODE_RENAME, CodeRename, getName } from './utils/name';
+import { CODE_RENAME, CodeRename, getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
 import {
   testConfig,
@@ -205,14 +205,15 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
   private runCase(testRunner: TestRunner, body: (each: Combined, b: BeforeT) => void) {
     return (t: OneTest<Combined>, i: number) => {
-      guard(!!t.name, 'Every case in .each should have not empty data');
+      guard(!!t.name.name, 'Every case in .each should have not empty data');
 
-      const name = this.entityName(i + 1, t.name);
+      const name = this.entityName(i + 1, t.name.name);
       this.runTest(
         testRunner,
         name,
         async (args, b) => {
-          guard(!t.failCode, messageFromRenameCode(t.failCode, this.conf.maxTestNameLength));
+          const code = t.name.code;
+          guard(!code, messageFromRenameCode(code!, this.conf.maxTestNameLength));
           await body(args, b);
         },
         t.data,
@@ -270,29 +271,34 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
     const additions = mergeIntoOne(this.additions);
 
-    const root = createTree(this.groups, additions, maxTestNameLength, undefined, k => {
+    const getDefectForTest = (testData: any) => {
       let defect = {};
-      const defectObjs = this.defects.map(defect =>
-        this.findDefect({ ...k.data, ...additions }, defect),
-      );
+      const defectObjs = this.defects.map(defect => this.findDefect(testData, defect));
       defectObjs.forEach(p => (defect = { ...defect, ...p }));
-      const name = getName({ ...additions, ...defect }, maxTestNameLength);
-      const name2 = getName({ ...k.data, ...additions, ...defect }, maxTestNameLength);
-      const newName = k.name + (name.name ? ', ' + name.name : '');
-      const case_ = {
-        ...k,
-        data: { ...k.data, ...additions, ...defect },
+      return defect;
+    };
+
+    const root = createTree(this.groups, additions, maxTestNameLength, undefined, currentTest => {
+      let defect = getDefectForTest({ ...currentTest.data, ...additions });
+      const additionalData = { ...additions, ...defect };
+      const fullData = { ...currentTest.data, ...additionalData };
+      const partialData = { ...currentTest.partialData, ...additionalData };
+      const nameCaseFull = getName(fullData, maxTestNameLength);
+      const newName = getName(partialData, maxTestNameLength);
+
+      const testCase: OneTest<any> = {
+        ...currentTest,
+        data: fullData,
         name: newName,
-        failCode: name2.code,
       };
-      const nameCaseFull = getName(case_.data, maxTestNameLength);
+
       allCases.push({
-        ...case_,
-        name: nameCaseFull.name,
-        failCode: nameCaseFull.code,
-        flatDesc: (case_.data as SimpleCase<Combined>).flatDesc,
+        ...testCase,
+        name: nameCaseFull,
+        flatDesc: (testCase.data as SimpleCase<Combined>).flatDesc,
       });
-      return case_;
+
+      return testCase;
     });
 
     // run test showing that filter is incorrect
@@ -372,17 +378,4 @@ const runSuite = (suiteRunner: Runner, callback: () => void, suiteName?: string)
     return;
   }
   callback();
-};
-
-const messageFromRenameCode = (code: CodeRename, maxLength: number) => {
-  switch (code) {
-    case CODE_RENAME.nameTooLong: {
-      return `Automatic test name is too long (>${maxLength}symbols). Please add 'desc' to case.`;
-    }
-    case CODE_RENAME.nameHasFunctions: {
-      return `Test case data has functions in it. Please add 'desc' to case.`;
-    }
-    default:
-      return 'unknown code';
-  }
 };

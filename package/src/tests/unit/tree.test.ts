@@ -13,7 +13,7 @@ describe('units', function () {
     const byTree = (node: Node<any>, level: number) => {
       result.push(' '.repeat(level * 2) + 'suite:' + node.name);
       node.tests.forEach(c => {
-        result.push(' '.repeat(level * 4) + 'test:' + c.name);
+        result.push(' '.repeat(level * 4) + 'test:' + c.name.name);
       });
       node.children.forEach((c, i) => {
         byTree(c, level + 1);

@@ -3,7 +3,22 @@ export enum CODE_RENAME {
   nameTooLong = 'NAME_TOO_LONG',
   nameHasFunctions = 'NAME_HAS_FUNCTIONS',
 }
-export const getName = <T>(obj: T, maxLength: number): { name: string; code?: CodeRename } => {
+
+export const messageFromRenameCode = (code: CodeRename, maxLength: number) => {
+  switch (code) {
+    case CODE_RENAME.nameTooLong: {
+      return `Automatic test name is too long (>${maxLength}symbols). Please add 'desc' to case.`;
+    }
+    case CODE_RENAME.nameHasFunctions: {
+      return `Test case data has functions in it. Please add 'desc' to case.`;
+    }
+    default:
+      return 'unknown code';
+  }
+};
+
+export type NameResult = { name: string; code?: CodeRename };
+export const getName = <T>(obj: T, maxLength: number): NameResult => {
   // should not throw here
 
   const untypedObj = { ...(obj as any) };
@@ -31,10 +46,6 @@ export const getName = <T>(obj: T, maxLength: number): { name: string; code?: Co
   }
 
   return { name: result, code };
-};
-
-const isSimple = (obj: any) => {
-  return !obj || typeof obj === 'string' || typeof obj === 'number';
 };
 
 const getNameInt = (obj: any): string => {
