@@ -49,4 +49,19 @@ describe(`Test with 'defect' example`, () => {
     .run(t => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
+
+  its('Defect with .defect() filtering')
+    .each([
+      { input: 10, expected: '12' }, // will skip this test
+      { input: 10, expected: '10' },
+      { input: 10, expected: '13' }, // and will skip this test
+    ])
+    .defect('Error Example', t => t.expected === '12')
+    .defect('Error Example With reasons', t => t.expected === '13', [
+      'Expected: "13"',
+      'Received: "10"',
+    ])
+    .run(t => {
+      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+    });
 });

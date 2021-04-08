@@ -1,14 +1,8 @@
-import { guard } from './utils/utils';
+import { guard, mergeIntoOne } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
-import { CODE_RENAME, CodeRename, getName } from './utils/name';
+import { getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
-import {
-  testConfig,
-  testConfigDefault,
-  testEnvDefault,
-  TestSetupType,
-  userEnv,
-} from './test-each-setup';
+import { testConfig, testEnvDefault, TestSetupType, userEnv } from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
 
 const stripAnsi = require('strip-ansi');
@@ -31,14 +25,18 @@ type OnlyInput<T> = (t: T) => boolean;
 type Before<T> = T & Disposable;
 type BeforeOut<T> = Promise<Before<T>> | Before<T>;
 type BeforeInput<T, TOut> = (t: T) => BeforeOut<TOut> | void;
+type Defect<T> = { reason: string; filter: OnlyInput<T> | undefined; failReasons?: string[] };
 
 export class TestEach<Combined = {}, BeforeT = {}> {
+  private additions: SimpleCase<{}>[] = [];
   private groups: Combined[][] = [];
   private befores: BeforeInput<Combined, BeforeT>[] = [];
   private ensures: { desc: string; check: (t: Combined[]) => void }[] = [];
   private ensuresCasesLength: ((t: JestMatchers<number>) => void)[] = [];
   private conf: TestSetupType;
-  private defectTest: string | undefined = undefined;
+
+  private defects: Defect<Combined>[] = [];
+
   private skippedTest: string | undefined = undefined;
   private onlyOne: boolean = false;
   private concurrentTests: boolean = false;
@@ -67,7 +65,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   }
 
   config(config: Partial<TestSetupType>): TestEach<Combined, BeforeT> {
-    this.conf = { ...testConfigDefault, ...config };
+    this.conf = { ...this.conf, ...config };
     return this;
   }
 
@@ -87,8 +85,12 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this;
   }
 
-  defect(reason: string): TestEach<Combined, BeforeT> {
-    this.defectTest = reason;
+  defect(
+    reason: string,
+    input?: OnlyInput<Combined>,
+    actualFailReasons?: string[],
+  ): TestEach<Combined, BeforeT> {
+    this.defects.push({ reason: reason, filter: input, failReasons: actualFailReasons });
     return this;
   }
 
@@ -99,6 +101,14 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
   before<TOut>(before: BeforeInput<Combined, TOut>): TestEach<Combined, BeforeT & TOut> {
     this.befores.push(before as any);
+    return this as any;
+  }
+
+  /**
+   * Will add specified object to each test case
+   */
+  add<TOut>(input: SimpleCase<TOut>): TestEach<Combined & TOut, BeforeT> {
+    this.additions.push(input as any);
     return this as any;
   }
 
@@ -115,7 +125,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     isBefore?: boolean,
   ) {
     const skipped = (args as SimpleCase<Combined>)?.skip || this.skippedTest;
-    const markedDefect = (args as SimpleCase<Combined>)?.defect || this.defectTest;
+    const markedDefect = (args as SimpleCase<Combined>)?.defect;
     const defectTestName = markedDefect ? ` - Marked with defect` : '';
     const testName = markedDefect ? name + defectTestName : name;
     //? name.replace(/(, )?defect\:\s*('|"|`)[^'"`]*('|"|`)/, '') + defectTestName
@@ -193,14 +203,15 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
   private runCase(testRunner: TestRunner, body: (each: Combined, b: BeforeT) => void) {
     return (t: OneTest<Combined>, i: number) => {
-      guard(!!t.name, 'Every case in .each should have not empty data');
+      guard(!!t.name.name, 'Every case in .each should have not empty data');
 
-      const name = this.entityName(i + 1, t.name);
+      const name = this.entityName(i + 1, t.name.name);
       this.runTest(
         testRunner,
         name,
         async (args, b) => {
-          guard(!t.failCode, messageFromRenameCode(t.failCode, this.conf.maxTestNameLength));
+          const code = t.name.code;
+          guard(!code, messageFromRenameCode(code!, this.conf.maxTestNameLength));
           await body(args, b);
         },
         t.data,
@@ -217,6 +228,74 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     }
   };
 
+  private findDefect = (testData: Combined) => {
+    const filterDefect = (data: Combined, defect: Defect<Combined>): WithDefect => {
+      const foundDefected = () => {
+        return defect && defect.filter ? defect.filter(data) : false;
+      };
+
+      const reasons = () => {
+        return defect.failReasons ? { actualFailReasonParts: defect.failReasons } : {};
+      };
+
+      return !defect.filter || foundDefected() ? { defect: defect.reason, ...reasons() } : {};
+    };
+
+    let defect = {};
+    const defectObjs = this.defects.map(defect => filterDefect(testData, defect));
+    defectObjs.forEach(p => (defect = { ...defect, ...p }));
+    return defect;
+  };
+
+  private runIsDefectExist = (testRunner: TestRunner, allCases: OneTest<Combined>[]) => {
+    if (this.defects.length > 0) {
+      this.defects.forEach((defect, i) => {
+        const casesFound = allCases.filter(k => (defect.filter ? defect.filter(k.data) : true));
+
+        if (defect.filter && casesFound.length === 0) {
+          this.runTest(testRunner, 'Filtering defect returned no results ' + (i + 1), () => {
+            throw new Error('No such case: ' + defect.filter!.toString());
+          });
+
+          return;
+        }
+      });
+    }
+  };
+
+  private filterAndRunIfSearchFailed = (
+    testRunner: TestRunner,
+    allCases: OneTest<Combined>[],
+  ): OneTest<Combined> | undefined => {
+    const casesFound = allCases.filter(k =>
+      this.onlyOneFilter ? this.onlyOneFilter(k.data) : false,
+    );
+    if (this.onlyOneFilter && casesFound.length === 0) {
+      this.runTest(testRunner, 'Only one search failed', () => {
+        throw new Error('No such case: ' + this.onlyOneFilter!.toString());
+      });
+    }
+    return casesFound.length > 0 ? casesFound[0] : undefined;
+  };
+
+  private runEnsures = (testRunner: TestRunner, allCases: OneTest<Combined>[]) => {
+    if (this.ensures.length > 0) {
+      this.ensures.forEach(ensure => {
+        this.runTest(testRunner, 'Ensure: ' + ensure.desc, () => {
+          ensure.check(allCases.map(p => p.data));
+        });
+      });
+    }
+
+    if (this.ensuresCasesLength.length > 0) {
+      this.ensuresCasesLength.forEach(ensure => {
+        this.runTest(testRunner, 'Ensure cases length', () => {
+          ensure(expect(allCases.map(p => p.data).length));
+        });
+      });
+    }
+  };
+
   run(body: (each: Combined, before: BeforeT) => void) {
     const { groupBySuites, maxTestNameLength } = this.conf;
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
@@ -226,54 +305,43 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       : useConcurrency
       ? this.env.it.concurrent
       : this.env.it;
+
     let allCases: OneTest<Combined>[] = [];
 
-    const root = createTree(this.groups, maxTestNameLength);
+    const additions = mergeIntoOne(this.additions);
 
-    treeWalk(root, undefined, t => {
-      const name = getName(t.data, maxTestNameLength);
+    const root = createTree(this.groups, additions, maxTestNameLength, undefined, currentTest => {
+      let defect = this.findDefect({ ...currentTest.data, ...additions });
+      const additionalData = { ...additions, ...defect };
+      const fullData = { ...currentTest.data, ...additionalData };
+      const partialData = { ...currentTest.partialData, ...additionalData };
+      const nameCaseFull = getName(fullData, maxTestNameLength);
+      const newName = getName(partialData, maxTestNameLength);
+
+      const testCase: OneTest<Combined> = {
+        ...currentTest,
+        data: fullData,
+        name: newName,
+      };
 
       allCases.push({
-        ...t,
-        name: name.name,
-        flatDesc: (t.data as SimpleCase<Combined>).flatDesc,
-        failCode: name.code,
+        ...testCase,
+        name: nameCaseFull,
+        flatDesc: (testCase.data as SimpleCase<Combined>).flatDesc,
       });
+
+      return testCase;
     });
 
-    const runEnsures = () => {
-      if (this.ensures.length > 0) {
-        this.ensures.forEach(ensure => {
-          this.runTest(testRunner, 'Ensure: ' + ensure.desc, () => {
-            ensure.check(allCases.map(p => p.data));
-          });
-        });
-      }
-
-      if (this.ensuresCasesLength.length > 0) {
-        this.ensuresCasesLength.forEach(ensure => {
-          this.runTest(testRunner, 'Ensure cases length', () => {
-            ensure(expect(allCases.map(p => p.data).length));
-          });
-        });
-      }
-    };
-
+    this.runIsDefectExist(testRunner, allCases);
     const isFlat = allCases.every(p => p.flatDesc);
 
     if (this.onlyOne) {
-      const casesFound = allCases.filter(k =>
-        this.onlyOneFilter ? this.onlyOneFilter(k.data) : true,
-      );
-
-      if (this.onlyOneFilter && casesFound.length === 0) {
-        this.runTest(testRunner, 'Only one search failed', () => {
-          throw new Error('No such case: ' + this.onlyOneFilter!.toString());
-        });
-
+      const caseFound = this.filterAndRunIfSearchFailed(testRunner, allCases);
+      if (this.onlyOneFilter && caseFound === undefined) {
         return;
       }
-      allCases = [casesFound[0]];
+      allCases = this.onlyOneFilter ? [caseFound!] : [allCases[0]];
     }
 
     if (this.groups.length === 0 && !!this.desc) {
@@ -303,7 +371,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       () => {
         suiteGuards();
         if (!this.onlyOne) {
-          runEnsures();
+          this.runEnsures(testRunner, allCases);
         }
         this.testIfOnly(testRunner);
         groupBySuites && !isFlat && !this.onlyOne ? tests() : testsFlat();
@@ -321,17 +389,4 @@ const runSuite = (suiteRunner: Runner, callback: () => void, suiteName?: string)
     return;
   }
   callback();
-};
-
-const messageFromRenameCode = (code: CodeRename, maxLength: number) => {
-  switch (code) {
-    case CODE_RENAME.nameTooLong: {
-      return `Automatic test name is too long (>${maxLength}symbols). Please add 'desc' to case.`;
-    }
-    case CODE_RENAME.nameHasFunctions: {
-      return `Test case data has functions in it. Please add 'desc' to case.`;
-    }
-    default:
-      return 'unknown code';
-  }
 };

@@ -31,7 +31,7 @@ export const testConfig: { config: TestSetupType } = {
 };
 
 export const TestEachSetup = (config: Partial<TestSetupType>) => {
-  testConfig.config = { ...testConfigDefault, ...config };
+  testConfig.config = { ...testConfig.config, ...config };
 };
 export const userEnv: { env?: Env } = {};
 

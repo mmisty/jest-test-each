@@ -183,16 +183,16 @@ describe('naming', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "1. description",
+              "name": "description",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
-            "1. a: function",
+            "a: function",
           ],
           "tests": Array [
-            "1. description",
+            "description",
           ],
           "totalEntities": 3,
         }
@@ -220,7 +220,7 @@ describe('naming', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "1. sdsd",
+              "name": "sdsd",
             },
           ],
           "skips": Array [],
@@ -228,7 +228,7 @@ describe('naming', () => {
             "Test pack - root",
           ],
           "tests": Array [
-            "1. sdsd",
+            "sdsd",
           ],
           "totalEntities": 2,
         }
@@ -249,7 +249,7 @@ describe('naming', () => {
         Array [
           Object {
             "message": "From guard: Automatic test name is too long (>10symbols). Please add 'desc' to case.",
-            "name": "1. a: supersupersuper",
+            "name": "a: supersupersuper",
           },
         ]
       `),

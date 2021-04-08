@@ -1,5 +1,5 @@
 import { TestEach } from '../../test-each';
-import { TestEachEnv } from '../../index';
+import { TestEachEnv, TestEachSetup } from '../../index';
 import { Env, Runner, TestRunner } from '../../test-env';
 import { delay } from './utils';
 
@@ -39,6 +39,7 @@ export const cleanup = () => {
   result.suites = [];
   result.tests = [];
   result.skips = [];
+  TestEachSetup({ groupBySuites: true, numericCases: false });
 };
 
 type Pass = {

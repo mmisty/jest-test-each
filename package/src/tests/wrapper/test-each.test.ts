@@ -10,6 +10,10 @@ describe('Test jest test each', () => {
     cleanup();
   });
 
+  // todo add when empty
+  // add map to each - additng defect to specific case
+  // if all failed = fail only one (setting)
+
   it('Pass and fail', async () => {
     test()
       .config(config)
@@ -108,6 +112,65 @@ describe('Test jest test each', () => {
             "something1: b",
           ]
         `),
+    );
+  });
+
+  it('flat description should run all cases ungroupped', async () => {
+    createTest()
+      .config(config)
+      .each([{ something1: 'a' }, { something1: 'b' }])
+      .each([{ brother: 'john' }, { brother: 'george' }])
+      .each([{ sister: 'mila' }, { sister: 'rita' }])
+      .each(t => [{ flatDesc: t.brother + ' ' + t.something1 + ' ' + t.sister }])
+      .run(t => success());
+
+    await waitFinished();
+
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+        Object {
+          "failures": Array [],
+          "passes": Array [
+            Object {
+              "name": "john a mila",
+            },
+            Object {
+              "name": "john a rita",
+            },
+            Object {
+              "name": "george a mila",
+            },
+            Object {
+              "name": "george a rita",
+            },
+            Object {
+              "name": "john b mila",
+            },
+            Object {
+              "name": "john b rita",
+            },
+            Object {
+              "name": "george b mila",
+            },
+            Object {
+              "name": "george b rita",
+            },
+          ],
+          "skips": Array [],
+          "suites": Array [],
+          "tests": Array [
+            "john a mila",
+            "john a rita",
+            "george a mila",
+            "george a rita",
+            "john b mila",
+            "john b rita",
+            "george b mila",
+            "george b rita",
+          ],
+          "totalEntities": 8,
+        }
+      `),
     );
   });
 });
