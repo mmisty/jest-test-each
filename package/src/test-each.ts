@@ -25,7 +25,7 @@ type OnlyInput<T> = (t: T) => boolean;
 type Before<T> = T & Disposable;
 type BeforeOut<T> = Promise<Before<T>> | Before<T>;
 type BeforeInput<T, TOut> = (t: T) => BeforeOut<TOut> | void;
-type Defect<T> = { reason: string; filter: OnlyInput<T> | undefined };
+type Defect<T> = { reason: string; filter: OnlyInput<T> | undefined; failReasons?: string[] };
 
 export class TestEach<Combined = {}, BeforeT = {}> {
   private additions: SimpleCase<{}>[] = [];
@@ -85,8 +85,12 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     return this;
   }
 
-  defect(reason: string, input?: OnlyInput<Combined>): TestEach<Combined, BeforeT> {
-    this.defects.push({ reason: reason, filter: input });
+  defect(
+    reason: string,
+    input?: OnlyInput<Combined>,
+    actualFailReasons?: string[],
+  ): TestEach<Combined, BeforeT> {
+    this.defects.push({ reason: reason, filter: input, failReasons: actualFailReasons });
     return this;
   }
 
@@ -230,7 +234,11 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         return defect && defect.filter ? defect.filter(data) : false;
       };
 
-      return !defect.filter || foundDefected() ? { defect: defect.reason } : {};
+      const reasons = () => {
+        return defect.failReasons ? { actualFailReasonParts: defect.failReasons } : {};
+      };
+
+      return !defect.filter || foundDefected() ? { defect: defect.reason, ...reasons() } : {};
     };
 
     let defect = {};
