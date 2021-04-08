@@ -10,6 +10,15 @@ describe('Test.only', () => {
     cleanup();
   });
 
+  xdescribe('Demo: should be 2 tests and one should fail when test.only', () => {
+    its('Demo')
+      .config(config)
+      .each([{ a: '1' }, { a: '2' }])
+      .each([{ b: '3' }, { b: '4' }])
+      //.only()
+      .run(t => success());
+  });
+
   it('should be 2 tests and one should fail when test.only', async () => {
     test()
       .config(config)
@@ -88,6 +97,13 @@ describe('Test.only', () => {
           ]
         `),
     );
+  });
+
+  describe.skip('demo: should fail when no cases and test.only', () => {
+    its('Demo')
+      .config(config)
+      //.only()
+      .run(t => success());
   });
 
   it('should fail when no cases and test.only', async () => {

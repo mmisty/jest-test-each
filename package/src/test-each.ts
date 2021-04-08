@@ -1,14 +1,8 @@
 import { guard, mergeIntoOne } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
-import { CODE_RENAME, CodeRename, getName, messageFromRenameCode } from './utils/name';
+import { getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
-import {
-  testConfig,
-  testConfigDefault,
-  testEnvDefault,
-  TestSetupType,
-  userEnv,
-} from './test-each-setup';
+import { testConfig, testEnvDefault, TestSetupType, userEnv } from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
 
 const stripAnsi = require('strip-ansi');
@@ -230,13 +224,50 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     }
   };
 
-  private findDefect = (data: Combined, defect: Defect<Combined>): { defect?: string } => {
-    const foundDefected = () => {
-      return defect && defect.filter ? defect.filter(data) : false;
+  private findDefect = (testData: Combined) => {
+    const filterDefect = (data: Combined, defect: Defect<Combined>): WithDefect => {
+      const foundDefected = () => {
+        return defect && defect.filter ? defect.filter(data) : false;
+      };
+
+      return !defect.filter || foundDefected() ? { defect: defect.reason } : {};
     };
 
-    const isDefect = !defect.filter || foundDefected();
-    return isDefect ? { defect: defect.reason } : {};
+    let defect = {};
+    const defectObjs = this.defects.map(defect => filterDefect(testData, defect));
+    defectObjs.forEach(p => (defect = { ...defect, ...p }));
+    return defect;
+  };
+
+  private runIsDefectExist = (testRunner: TestRunner, allCases: OneTest<Combined>[]) => {
+    if (this.defects.length > 0) {
+      this.defects.forEach((defect, i) => {
+        const casesFound = allCases.filter(k => (defect.filter ? defect.filter(k.data) : true));
+
+        if (defect.filter && casesFound.length === 0) {
+          this.runTest(testRunner, 'Filtering defect returned no results ' + (i + 1), () => {
+            throw new Error('No such case: ' + defect.filter!.toString());
+          });
+
+          return;
+        }
+      });
+    }
+  };
+
+  private filterAndRunIfSearchFailed = (
+    testRunner: TestRunner,
+    allCases: OneTest<Combined>[],
+  ): OneTest<Combined> | undefined => {
+    const casesFound = allCases.filter(k =>
+      this.onlyOneFilter ? this.onlyOneFilter(k.data) : false,
+    );
+    if (this.onlyOneFilter && casesFound.length === 0) {
+      this.runTest(testRunner, 'Only one search failed', () => {
+        throw new Error('No such case: ' + this.onlyOneFilter!.toString());
+      });
+    }
+    return casesFound.length > 0 ? casesFound[0] : undefined;
   };
 
   private runEnsures = (testRunner: TestRunner, allCases: OneTest<Combined>[]) => {
@@ -271,22 +302,15 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
     const additions = mergeIntoOne(this.additions);
 
-    const getDefectForTest = (testData: any) => {
-      let defect = {};
-      const defectObjs = this.defects.map(defect => this.findDefect(testData, defect));
-      defectObjs.forEach(p => (defect = { ...defect, ...p }));
-      return defect;
-    };
-
     const root = createTree(this.groups, additions, maxTestNameLength, undefined, currentTest => {
-      let defect = getDefectForTest({ ...currentTest.data, ...additions });
+      let defect = this.findDefect({ ...currentTest.data, ...additions });
       const additionalData = { ...additions, ...defect };
       const fullData = { ...currentTest.data, ...additionalData };
       const partialData = { ...currentTest.partialData, ...additionalData };
       const nameCaseFull = getName(fullData, maxTestNameLength);
       const newName = getName(partialData, maxTestNameLength);
 
-      const testCase: OneTest<any> = {
+      const testCase: OneTest<Combined> = {
         ...currentTest,
         data: fullData,
         name: newName,
@@ -301,36 +325,15 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       return testCase;
     });
 
-    // run test showing that filter is incorrect
-    if (this.defects.length > 0) {
-      this.defects.forEach((defect, i) => {
-        const casesFound = allCases.filter(k => (defect.filter ? defect.filter(k.data) : true));
-
-        if (defect.filter && casesFound.length === 0) {
-          this.runTest(testRunner, 'Filtering defect returned no results ' + (i + 1), () => {
-            throw new Error('No such case: ' + defect.filter!.toString());
-          });
-
-          return;
-        }
-      });
-    }
-
+    this.runIsDefectExist(testRunner, allCases);
     const isFlat = allCases.every(p => p.flatDesc);
 
     if (this.onlyOne) {
-      const casesFound = allCases.filter(k =>
-        this.onlyOneFilter ? this.onlyOneFilter(k.data) : true,
-      );
-
-      if (this.onlyOneFilter && casesFound.length === 0) {
-        this.runTest(testRunner, 'Only one search failed', () => {
-          throw new Error('No such case: ' + this.onlyOneFilter!.toString());
-        });
-
+      const caseFound = this.filterAndRunIfSearchFailed(testRunner, allCases);
+      if (this.onlyOneFilter && caseFound === undefined) {
         return;
       }
-      allCases = [casesFound[0]];
+      allCases = this.onlyOneFilter ? [caseFound!] : [allCases[0]];
     }
 
     if (this.groups.length === 0 && !!this.desc) {
