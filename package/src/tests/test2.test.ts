@@ -1,4 +1,4 @@
-import {success} from "./utils/utils";
+import { success } from './utils/utils';
 
 describe('Defects', () => {
   its('One defect with filter')
@@ -22,11 +22,12 @@ describe('Defects', () => {
     .run(t => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
-  
+
   its('sdsd')
-   // .config(config)
+    // .config(config)
     .each([{ a: '1' }, { a: '2' }])
     .each([{ b: '3' }, { b: '4' }])
-    .only()
+    .each([{ c: '3' }, { c: '4' }])
+    // .only()
     .run(t => success());
 });

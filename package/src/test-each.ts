@@ -1,4 +1,4 @@
-import { guard } from './utils/utils';
+import { guard, mergeIntoOne } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
 import { CODE_RENAME, CodeRename, getName } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
@@ -22,7 +22,6 @@ type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & Wit
 type Disposable = { dispose?: () => void };
 type SimpleCase<T> = InputCaseType<T>;
 type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo desc as func doesn't work for cases as func
-type FuncOneCase<T, TOut> = (t: T) => SimpleCase<TOut>;
 type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
 
 type DescFunc<T> = (k: T) => string;
@@ -33,6 +32,7 @@ type Before<T> = T & Disposable;
 type BeforeOut<T> = Promise<Before<T>> | Before<T>;
 type BeforeInput<T, TOut> = (t: T) => BeforeOut<TOut> | void;
 type Defect<T> = { reason: string; filter: OnlyInput<T> | undefined };
+
 export class TestEach<Combined = {}, BeforeT = {}> {
   private additions: SimpleCase<{}>[] = [];
   private groups: Combined[][] = [];
@@ -42,7 +42,6 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   private conf: TestSetupType;
 
   private defects: Defect<Combined>[] = [];
-  // private defectTestFilter: OnlyInput<Combined> | undefined = undefined;
 
   private skippedTest: string | undefined = undefined;
   private onlyOne: boolean = false;
@@ -72,7 +71,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   }
 
   config(config: Partial<TestSetupType>): TestEach<Combined, BeforeT> {
-    this.conf = { ...testConfigDefault, ...config };
+    this.conf = { ...this.conf, ...config };
     return this;
   }
 
@@ -230,17 +229,31 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     }
   };
 
-  private addDefect = (data: Combined, defect: Defect<Combined>): any => {
+  private findDefect = (data: Combined, defect: Defect<Combined>): { defect?: string } => {
     const foundDefected = () => {
-      if (defect && defect.filter) {
-        const res = defect.filter(data);
-        return res === undefined ? false : res;
-      }
-      return false;
+      return defect && defect.filter ? defect.filter(data) : false;
     };
 
     const isDefect = !defect.filter || foundDefected();
     return isDefect ? { defect: defect.reason } : {};
+  };
+
+  private runEnsures = (testRunner: TestRunner, allCases: OneTest<Combined>[]) => {
+    if (this.ensures.length > 0) {
+      this.ensures.forEach(ensure => {
+        this.runTest(testRunner, 'Ensure: ' + ensure.desc, () => {
+          ensure.check(allCases.map(p => p.data));
+        });
+      });
+    }
+
+    if (this.ensuresCasesLength.length > 0) {
+      this.ensuresCasesLength.forEach(ensure => {
+        this.runTest(testRunner, 'Ensure cases length', () => {
+          ensure(expect(allCases.map(p => p.data).length));
+        });
+      });
+    }
   };
 
   run(body: (each: Combined, before: BeforeT) => void) {
@@ -252,15 +265,15 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       : useConcurrency
       ? this.env.it.concurrent
       : this.env.it;
+
     let allCases: OneTest<Combined>[] = [];
 
-    let additions = {};
-    this.additions.forEach(p => (additions = { ...additions, ...p }));
+    const additions = mergeIntoOne(this.additions);
 
     const root = createTree(this.groups, additions, maxTestNameLength, undefined, k => {
       let defect = {};
       const defectObjs = this.defects.map(defect =>
-        this.addDefect({ ...k.data, ...additions }, defect),
+        this.findDefect({ ...k.data, ...additions }, defect),
       );
       defectObjs.forEach(p => (defect = { ...defect, ...p }));
       const name = getName({ ...additions, ...defect }, maxTestNameLength);
@@ -272,10 +285,16 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         name: newName,
         failCode: name2.code,
       };
-      allCases.push({ ...case_, flatDesc: (case_.data as SimpleCase<Combined>).flatDesc });
+      const nameCaseFull = getName(case_.data, maxTestNameLength);
+      allCases.push({
+        ...case_,
+        name: nameCaseFull.name,
+        failCode: nameCaseFull.code,
+        flatDesc: (case_.data as SimpleCase<Combined>).flatDesc,
+      });
       return case_;
     });
-    
+
     // run test showing that filter is incorrect
     if (this.defects.length > 0) {
       this.defects.forEach((defect, i) => {
@@ -290,24 +309,6 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         }
       });
     }
-
-    const runEnsures = () => {
-      if (this.ensures.length > 0) {
-        this.ensures.forEach(ensure => {
-          this.runTest(testRunner, 'Ensure: ' + ensure.desc, () => {
-            ensure.check(allCases.map(p => p.data));
-          });
-        });
-      }
-
-      if (this.ensuresCasesLength.length > 0) {
-        this.ensuresCasesLength.forEach(ensure => {
-          this.runTest(testRunner, 'Ensure cases length', () => {
-            ensure(expect(allCases.map(p => p.data).length));
-          });
-        });
-      }
-    };
 
     const isFlat = allCases.every(p => p.flatDesc);
 
@@ -353,7 +354,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       () => {
         suiteGuards();
         if (!this.onlyOne) {
-          runEnsures();
+          this.runEnsures(testRunner, allCases);
         }
         this.testIfOnly(testRunner);
         groupBySuites && !isFlat && !this.onlyOne ? tests() : testsFlat();

@@ -1,4 +1,5 @@
 import { delay, success } from './utils/utils';
+import { TestEachSetup } from '../test-each-setup';
 
 describe('test examples', () => {
   its('Simple test: roundings')
@@ -197,4 +198,31 @@ describe('test examples', () => {
     .run(t => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
+
+  its('local: Not group by suites')
+    .config({ groupBySuites: false })
+    .each([
+      { input: 0, expected: '0' },
+      { input: 102.99998, expected: '103' },
+      { input: 10, expected: '10' },
+    ])
+    .each([
+      { input3: 4, expected: '4' },
+      { input3: 5, expected: '5' },
+    ])
+    .run(t => success());
+
+  TestEachSetup({ groupBySuites: false });
+
+  its('Global setup: not group by suites')
+    .each([
+      { input: 0, expected: '0' },
+      { input: 102.99998, expected: '103' },
+      { input: 10, expected: '10' },
+    ])
+    .each([
+      { input3: 4, expected: '4' },
+      { input3: 5, expected: '5' },
+    ])
+    .run(t => success());
 });
