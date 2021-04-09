@@ -1,7 +1,7 @@
 import { TestEach } from './test-each';
 import { TestEachSetup, TestEachEnv } from './test-each-setup';
 
-const createTest = (desc?: string) => new TestEach(desc);
+const createTest = <T = {}, B = {}>(desc?: string) => new TestEach<T, B>(desc);
 
 (global as any).Test = createTest;
 (global as any).its = createTest;
