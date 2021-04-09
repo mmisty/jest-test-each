@@ -27,6 +27,32 @@ const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Nod
     tests: [],
   };
 };
+
+export const mergeSingles = (array: any[][]): any[][] => {
+  for (let i = 0; i < array.length; i++) {
+    if (array[i].length === 1) {
+      if (i - 1 >= 0) {
+        const el = array[i - 1].map(p => ({ ...p, ...array[i][0] }));
+        array[i - 1] = el;
+        array[i] = el;
+        delete array[i];
+
+        return mergeSingles(array.filter(p => !!p));
+      } else {
+        if (i + 1 < array.length) {
+          const el = array[i + 1].map(p => ({ ...array[i][0], ...p }));
+          array[i + 1] = el;
+          array[i] = el;
+
+          delete array[i];
+          return mergeSingles(array.filter(p => !!p));
+        }
+      }
+    }
+  }
+  return array;
+};
+
 // todo any
 const createTree = <T = {}, K = {}>(
   levels: T[][],
@@ -37,15 +63,16 @@ const createTree = <T = {}, K = {}>(
 ): Node<T & K> => {
   const root = createNode({}, maxTestNameLength);
 
+  const levels2 = mergeSingles(levels);
   const populateNodes = <K>(node: Node<K>, nextLevel: number = 0) => {
-    for (const [levelNum, cases] of levels.entries()) {
+    for (const [levelNum, cases] of levels2.entries()) {
       if (nextLevel !== levelNum) {
         continue;
       }
       const previousData = { ...node.previousData, ...additions };
       const newCases = typeof cases === 'function' ? (cases as any)(previousData) : cases;
 
-      if (levelNum === levels.length - 1) {
+      if (levelNum === levels2.length - 1) {
         newCases.forEach((p: T) => {
           const name = getName(p, maxTestNameLength);
           const test_: OneTest<any> = {
