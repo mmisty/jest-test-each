@@ -6,7 +6,7 @@ const createTest = <T = {}, B = {}>(desc?: string) => new TestEach<T, B>(desc);
 (global as any).Test = createTest;
 (global as any).its = createTest;
 
-type TestEachFunc = (desc?: string) => TestEach;
+type TestEachFunc = <T = {}, B = {}>(desc?: string) => TestEach<T, B>;
 
 declare global {
   export const its: TestEachFunc;
