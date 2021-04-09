@@ -4,6 +4,7 @@ import { getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
 import { testConfig, testEnvDefault, TestSetupType, userEnv } from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
+import { checkObjEmpty } from './tests/utils/utils';
 
 const stripAnsi = require('strip-ansi');
 
@@ -203,8 +204,6 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
   private runCase(testRunner: TestRunner, body: (each: Combined, b: BeforeT) => void) {
     return (t: OneTest<Combined>, i: number) => {
-      guard(!!t.name.name, 'Every case in .each should have not empty data');
-
       const name = this.entityName(i + 1, t.name.name);
       this.runTest(
         testRunner,
@@ -352,6 +351,10 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
     const suiteGuards = () => {
       guard(!(this.groups.length === 0 && !this.desc), 'Test should have name when no cases');
+      guard(
+        !this.groups.some(p => checkObjEmpty(p)),
+        'Every case in .each should have not empty data',
+      );
     };
 
     const tests = () =>

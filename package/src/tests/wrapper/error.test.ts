@@ -37,12 +37,6 @@ describe('Error handling', () => {
   });
 
   it('should throw when no data in some eaches', async () => {
-    const empty = () =>
-      test()
-        .config(config)
-        .each([{}])
-        .run(t => success());
-
     const notTotallyEmpty = () =>
       test()
         .config(config)
@@ -50,15 +44,24 @@ describe('Error handling', () => {
         .each([{}])
         .run(t => success());
 
-    assertAll(
-      () =>
-        expect(empty).toThrow(
-          new Error('From guard: Every case in .each should have not empty data'),
-        ),
-      () =>
-        expect(notTotallyEmpty).toThrow(
-          new Error('From guard: Every case in .each should have not empty data'),
-        ),
+    assertAll(() =>
+      expect(notTotallyEmpty).toThrow(
+        new Error('From guard: Every case in .each should have not empty data'),
+      ),
+    );
+  });
+
+  it('should throw when no data in some eaches - total empty', async () => {
+    const empty = () =>
+      test()
+        .config(config)
+        .each([{}])
+        .run(t => success());
+
+    assertAll(() =>
+      expect(empty).toThrow(
+        new Error('From guard: Every case in .each should have not empty data'),
+      ),
     );
   });
 });

@@ -37,3 +37,17 @@ export function success() {
 export function failure() {
   expect(1).toBe(0);
 }
+
+export const checkObjEmpty = (obj: any) => {
+  return (
+    JSON.stringify(obj, (k, v) => {
+      if (typeof v === 'function') {
+        return 'function';
+      }
+      if (v === undefined) {
+        return 'undefined';
+      }
+      return v;
+    }) === '[{}]'
+  );
+};
