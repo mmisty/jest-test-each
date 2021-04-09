@@ -199,24 +199,23 @@ describe('Test.before', () => {
             "failures": Array [
               Object {
                 "message": "Before failed",
-                "name": "b: 3",
+                "name": "a: 1, b: 3",
               },
               Object {
                 "message": "Before failed",
-                "name": "b: 4",
+                "name": "a: 1, b: 4",
               },
             ],
             "passes": Array [],
             "skips": Array [],
             "suites": Array [
               "Test pack - root",
-              "a: 1",
             ],
             "tests": Array [
-              "b: 3",
-              "b: 4",
+              "a: 1, b: 3",
+              "a: 1, b: 4",
             ],
-            "totalEntities": 4,
+            "totalEntities": 3,
           }
         `),
     );
@@ -247,22 +246,21 @@ describe('Test.before', () => {
             "failures": Array [],
             "passes": Array [
               Object {
-                "name": "b: 3",
+                "name": "a: 1, b: 3",
               },
               Object {
-                "name": "b: 4",
+                "name": "a: 1, b: 4",
               },
             ],
             "skips": Array [],
             "suites": Array [
               "Test pack - root",
-              "a: 1",
             ],
             "tests": Array [
-              "b: 3",
-              "b: 4",
+              "a: 1, b: 3",
+              "a: 1, b: 4",
             ],
-            "totalEntities": 4,
+            "totalEntities": 3,
           }
         `),
     );
@@ -288,22 +286,21 @@ describe('Test.before', () => {
             "failures": Array [],
             "passes": Array [
               Object {
-                "name": "b: 3",
+                "name": "a: 1, b: 3",
               },
               Object {
-                "name": "b: 4",
+                "name": "a: 1, b: 4",
               },
             ],
             "skips": Array [],
             "suites": Array [
               "Test pack - root",
-              "a: 1",
             ],
             "tests": Array [
-              "b: 3",
-              "b: 4",
+              "a: 1, b: 3",
+              "a: 1, b: 4",
             ],
-            "totalEntities": 4,
+            "totalEntities": 3,
           }
         `),
     );

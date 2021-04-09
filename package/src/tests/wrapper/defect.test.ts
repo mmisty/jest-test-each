@@ -92,10 +92,10 @@ describe('Test with defect', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "b: 2, expected: 3, defect: SOME_ID - Marked with defect 'SOME_ID'",
+              "name": "a: 1, b: 2, expected: 3, defect: SOME_ID - Marked with defect 'SOME_ID'",
             },
             Object {
-              "name": "b: 2, expected: 3",
+              "name": "a: 3, b: 2, expected: 3",
             },
           ],
           "skips": Array [
@@ -106,14 +106,12 @@ describe('Test with defect', () => {
           ],
           "suites": Array [
             "Test pack - root",
-            "a: 1",
-            "a: 3",
           ],
           "tests": Array [
-            "b: 2, expected: 3, defect: SOME_ID - Marked with defect 'SOME_ID'",
-            "b: 2, expected: 3",
+            "a: 1, b: 2, expected: 3, defect: SOME_ID - Marked with defect 'SOME_ID'",
+            "a: 3, b: 2, expected: 3",
           ],
-          "totalEntities": 5,
+          "totalEntities": 3,
         }
       `),
     );
@@ -151,26 +149,24 @@ describe('Test with defect', () => {
 
         Expected: \\"3\\"
         Received: \\"1\\"",
-              "name": "b: 2, expected: 3",
+              "name": "a: 1, b: 2, expected: 3",
             },
           ],
           "passes": Array [
             Object {
-              "name": "b: 2, expected: 3",
+              "name": "a: 3, b: 2, expected: 3",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
-            "a: 1",
-            "a: 3",
           ],
           "tests": Array [
             "Filtering defect returned no results 1",
-            "b: 2, expected: 3",
-            "b: 2, expected: 3",
+            "a: 1, b: 2, expected: 3",
+            "a: 3, b: 2, expected: 3",
           ],
-          "totalEntities": 6,
+          "totalEntities": 4,
         }
       `),
     );
@@ -192,10 +188,10 @@ describe('Test with defect', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
+              "name": "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
             },
             Object {
-              "name": "b: 2, expected: 3",
+              "name": "a: 3, b: 2, expected: 3",
             },
           ],
           "skips": Array [
@@ -206,14 +202,12 @@ describe('Test with defect', () => {
           ],
           "suites": Array [
             "Test pack - root",
-            "a: 1",
-            "a: 3",
           ],
           "tests": Array [
-            "b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
-            "b: 2, expected: 3",
+            "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
+            "a: 3, b: 2, expected: 3",
           ],
-          "totalEntities": 5,
+          "totalEntities": 3,
         }
       `),
     );
@@ -240,25 +234,23 @@ describe('Test with defect', () => {
 
         Expected: \\"3\\"
         Received: \\"1\\"\\"",
-              "name": "b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'5\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
+              "name": "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'5\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
             },
           ],
           "passes": Array [
             Object {
-              "name": "b: 2, expected: 3",
+              "name": "a: 3, b: 2, expected: 3",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
-            "a: 1",
-            "a: 3",
           ],
           "tests": Array [
-            "b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'5\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
-            "b: 2, expected: 3",
+            "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'5\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
+            "a: 3, b: 2, expected: 3",
           ],
-          "totalEntities": 5,
+          "totalEntities": 3,
         }
       `),
     );

@@ -189,12 +189,11 @@ describe('naming', () => {
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
-            "a: function",
           ],
           "tests": Array [
             "description",
           ],
-          "totalEntities": 3,
+          "totalEntities": 2,
         }
       `),
     );

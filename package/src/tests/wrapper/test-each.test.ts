@@ -59,7 +59,6 @@ describe('Test jest test each', () => {
     );
   });
 
-  // todo
   it('should be one test', async () => {
     test()
       .config(config)
@@ -70,25 +69,25 @@ describe('Test jest test each', () => {
 
     await waitFinished();
 
-    assertAll(
-      () => expect(result.passes.length).toBe(1),
-      () => expect(result.failures.length).toBe(0),
-      () => expect(result.totalEntities).toBe(4),
-      () =>
-        expect(result.suites).toMatchInlineSnapshot(`
-          Array [
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+        Object {
+          "failures": Array [],
+          "passes": Array [
+            Object {
+              "name": "something1: a, something2: b, something3: c",
+            },
+          ],
+          "skips": Array [],
+          "suites": Array [
             "Test pack - root",
-            "something1: a",
-            "something2: b",
-          ]
-        `),
-      () =>
-        expect(result.tests).toMatchInlineSnapshot(`
-          Array [
-            "something3: c",
-          ]
-        `),
-      () => expect(result.passes[0].name).toMatchInlineSnapshot(`"something3: c"`),
+          ],
+          "tests": Array [
+            "something1: a, something2: b, something3: c",
+          ],
+          "totalEntities": 2,
+        }
+      `),
     );
   });
 
@@ -114,8 +113,19 @@ describe('Test jest test each', () => {
         `),
     );
   });
-
-  it('flat description should run all cases ungroupped', async () => {
+  
+  describe('Demo: flat description should run all cases ungroupped',  () => {
+    its()
+      .config(config)
+      .each([{something1: 'a'}, {something1: 'b'}])
+      .each([{brother: 'john'}, {brother: 'george'}])
+      .each([{sister: 'mila'}, {sister: 'rita'}])
+      .each(t => [{flatDesc: t.brother + ' ' + t.something1 + ' ' + t.sister}])
+      .run(t => success());
+  });
+    
+    
+    it('flat description should run all cases ungroupped', async () => {
     createTest()
       .config(config)
       .each([{ something1: 'a' }, { something1: 'b' }])
