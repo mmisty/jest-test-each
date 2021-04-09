@@ -126,7 +126,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   ) {
     const skipped = (args as SimpleCase<Combined>)?.skip || this.skippedTest;
     const markedDefect = (args as SimpleCase<Combined>)?.defect;
-    const defectTestName = markedDefect ? ` - Marked with defect` : '';
+    const defectTestName = markedDefect ? ` - Marked with defect '${markedDefect}'` : '';
     const testName = markedDefect ? name + defectTestName : name;
     //? name.replace(/(, )?defect\:\s*('|"|`)[^'"`]*('|"|`)/, '') + defectTestName
 
