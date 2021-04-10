@@ -19,13 +19,16 @@ describe('Groups test', () => {
         .each([{ c: '3' }])
         .run(t => success());
     });
-    its('Demo1')
-      .config(config)
-      .each([{ a: '1' }, { a: '2' }])
-      .each([{ b: '1' }, { b: '2' }])
-      .each([{ c: '3' }])
-      .run(t => success());
-
+    
+    describe('Demo1', () => {
+      its()
+        .config(config)
+        .each([{a: '1'}, {a: '2'}])
+        .each([{b: '1'}, {b: '2'}])
+        .each([{c: '3'}])
+        .run(t => success());
+    });
+    
     its('Demo2')
       .config(config)
       .each([{ y: '0' }])
@@ -40,6 +43,12 @@ describe('Groups test', () => {
       .each([{ b: '1' }, { b: '2' }])
       .each([{ c: '3' }])
       .each([{ d: '3' }, { d: '5' }])
+      .run(t => success());
+    
+    its('Demo4')
+      .config(config)
+      .each([{ a: '1' }, { a: '2' }])
+      .each([{ b: '3' }])
       .run(t => success());
   });
 

@@ -13,18 +13,40 @@ describe('test examples', () => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
 
-  its('Flat description')
-    .each([
-      { input: 0, expected: '0' },
-      { input: 0.99, expected: '1' },
-      { input: 102.99998, expected: '103' },
-      { input: -6, expected: '-6' },
-    ])
-    .each(t => [{ flatDesc: `Input ${t.input} should be rounded to ${t.expected}` }])
-    .run(t => {
-      expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
-    });
-
+  describe('Flat description8989', ()=>{
+    its()
+      .each([
+        { input: 0, expected: '0' },
+        { input: 0.99, expected: '1' },
+        { input: 102.99998, expected: '103' },
+        { input: -6, expected: '-6' },
+      ])
+      .each(t => [{ flatDesc: `Input ${t.input} should be rounded to ${t.expected}` }])
+      .run(t => {
+        expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+      });
+  
+  })
+  
+  describe('Flat description - multiplication with functions', ()=>{
+    its()
+      .each([
+        { input: 0, expected: '0' },
+        { input: 0.99, expected: '1' },
+        { input: 102.99998, expected: '103' },
+        { input: -6, expected: '-6' },
+      ])
+      .each(t => [
+       // { gop: t.input },
+        { gop: t.input+1 }])
+      .each(t => [
+       // { gop: t.input },
+        { sop: t.input+2 }])
+      .run(t => {
+        expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
+      });
+  
+  })
   its('User defined description for test')
     .each([
       { input: 0, expected: '0', desc: 'Special case - zero' },
