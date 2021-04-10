@@ -1,7 +1,8 @@
 import { createTree } from '../../tree';
-/*
+
 describe('merge singles', function () {
-  it('no single', () => {
+  it.todo('no single');
+    /*, () => {
     expect(
       createTree([
         [{ efg: 1 }, { efg: 2 }, { efg: 3 }],
@@ -12,8 +13,8 @@ describe('merge singles', function () {
       [{ hij: 1 }, { hij: 3 }],
     ]);
   });
-
-  it('one single (start)', () => {
+*/
+  /*it('one single (start)', () => {
     expect(
       createTree([[{ abc: 1 }], [{ efg: 1 }, { efg: 2 }, { efg: 3 }], [{ hij: 1 }, { hij: 3 }]], {}, 200),
     ).toEqual([
@@ -138,5 +139,5 @@ describe('merge singles', function () {
       ],
     ]);
   });
-});
 */
+});

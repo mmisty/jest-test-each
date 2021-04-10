@@ -120,19 +120,6 @@ const createTree = <T = {}, K = {}>(
       const newCases = typeof cases === 'function' ? (cases as any)(previousData) : cases;
 
       if (levelNum === levels2.length - 1) {
-        /*if(newCases.length === 1) {
-          const obj = newCases[0];
-          const test_ = mergeNodeAndTest(node,obj,maxTestNameLength );
-          if(node.parent){
-            const test = onEachTest ? onEachTest(test_) : test_;
-           // node.parent.name = name.name;
-           // node.parent.fullData = test.data;
-           // node.parent.previousData = { ...node?.previousData, ...test.partialData } as any;
-            node.parent.tests.push(test as OneTest<any>);
-            node.parent.children =[];
-          }
-        }
-        else{*/
         newCases.forEach((p: T) => {
           const name = getName(p, maxTestNameLength);
           const test_: OneTest<any> = {
@@ -144,11 +131,10 @@ const createTree = <T = {}, K = {}>(
           const test = onEachTest ? onEachTest(test_) : test_;
           node.tests.push(test as OneTest<any>);
         });
-        //}
         return;
       } else {
         if (newCases.length === 1) {
-          const obj = newCases[0];
+          const obj = { ...newCases[0], ...additions };
           const newNode = createNode(obj, maxTestNameLength, node);
           //const newNode = mergeNodes(node, obj, maxTestNameLength);
           populateNodes(newNode, levelNum + 1);
@@ -162,7 +148,6 @@ const createTree = <T = {}, K = {}>(
         } else {
           newCases.forEach((p: any) => {
             const child_ = createNode(p, maxTestNameLength, node);
-            //const child_ = mergeNodes(p, {}, maxTestNameLength);
             const child = onEachNode ? onEachNode(child_) : child_;
             populateNodes(child, levelNum + 1);
             if (child.children.length > 1 || child.tests.length > 1) {

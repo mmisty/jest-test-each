@@ -50,6 +50,14 @@ describe('Test.ensureCasesLength', () => {
     );
   });
 
+  describe('Demo:should pass ensure test', () => {
+    its()
+      .config(config)
+      .each([{ a: '1' }])
+      .each([{ b: '3' }, { b: '4' }])
+      .ensureCasesLength(t => t.toMatchInlineSnapshot(`2`))
+      .run((t, b) => success());
+  });
   it('should pass ensure test', async () => {
     test()
       .config(config)

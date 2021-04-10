@@ -237,7 +237,9 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         return defect.failReasons ? { actualFailReasonParts: defect.failReasons } : {};
       };
 
-      return !defect.filter || foundDefected() ? { defect: defect.reason, ...reasons() } : {};
+      const found = foundDefected();
+      const res = reasons();
+      return !defect.filter || found ? { defect: defect.reason, ...res } : {};
     };
 
     let defect = {};
@@ -321,6 +323,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         ...currentTest,
         data: fullData,
         name: newName,
+        partialData,
       };
 
       allCases.push({
