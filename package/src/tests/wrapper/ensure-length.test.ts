@@ -29,22 +29,23 @@ describe('Test.ensureCasesLength', () => {
               "name": "Ensure cases length",
             },
             Object {
-              "name": "a: 1, b: 3",
+              "name": "b: 3",
             },
             Object {
-              "name": "a: 1, b: 4",
+              "name": "b: 4",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
+            "a: 1",
           ],
           "tests": Array [
             "Ensure cases length",
-            "a: 1, b: 3",
-            "a: 1, b: 4",
+            "b: 3",
+            "b: 4",
           ],
-          "totalEntities": 4,
+          "totalEntities": 5,
         }
       `),
     );
@@ -58,6 +59,7 @@ describe('Test.ensureCasesLength', () => {
       .ensureCasesLength(t => t.toMatchInlineSnapshot(`2`))
       .run((t, b) => success());
   });
+
   it('should pass ensure test', async () => {
     test()
       .config(config)
@@ -77,22 +79,23 @@ describe('Test.ensureCasesLength', () => {
               "name": "Ensure cases length",
             },
             Object {
-              "name": "a: 1, b: 3",
+              "name": "b: 3",
             },
             Object {
-              "name": "a: 1, b: 4",
+              "name": "b: 4",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
+            "a: 1",
           ],
           "tests": Array [
             "Ensure cases length",
-            "a: 1, b: 3",
-            "a: 1, b: 4",
+            "b: 3",
+            "b: 4",
           ],
-          "totalEntities": 4,
+          "totalEntities": 5,
         }
       `),
     );
@@ -122,22 +125,23 @@ describe('Test.ensureCasesLength', () => {
           ],
           "passes": Array [
             Object {
-              "name": "a: 1, b: 3",
+              "name": "b: 3",
             },
             Object {
-              "name": "a: 1, b: 4",
+              "name": "b: 4",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
+            "a: 1",
           ],
           "tests": Array [
             "Ensure cases length",
-            "a: 1, b: 3",
-            "a: 1, b: 4",
+            "b: 3",
+            "b: 4",
           ],
-          "totalEntities": 4,
+          "totalEntities": 5,
         }
       `),
     );

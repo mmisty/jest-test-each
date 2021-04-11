@@ -25,10 +25,10 @@ describe('Test.skip', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "a: 1, b: 4, skip: 'some reason'",
+              "name": "b: 4, skip: 'some reason'",
             },
             Object {
-              "name": "a: 1, b: 3",
+              "name": "b: 3",
             },
           ],
           "skips": Array [
@@ -36,12 +36,13 @@ describe('Test.skip', () => {
           ],
           "suites": Array [
             "Test pack - root",
+            "a: 1",
           ],
           "tests": Array [
-            "a: 1, b: 3",
-            "a: 1, b: 4, skip: 'some reason'",
+            "b: 3",
+            "b: 4, skip: 'some reason'",
           ],
-          "totalEntities": 3,
+          "totalEntities": 4,
         }
       `),
     );
@@ -63,10 +64,10 @@ describe('Test.skip', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "a: 1, b: 3",
+              "name": "b: 3",
             },
             Object {
-              "name": "a: 1, b: 4",
+              "name": "b: 4",
             },
           ],
           "skips": Array [
@@ -75,12 +76,13 @@ describe('Test.skip', () => {
           ],
           "suites": Array [
             "Test pack - root",
+            "a: 1",
           ],
           "tests": Array [
-            "a: 1, b: 3",
-            "a: 1, b: 4",
+            "b: 3",
+            "b: 4",
           ],
-          "totalEntities": 3,
+          "totalEntities": 4,
         }
       `),
     );
