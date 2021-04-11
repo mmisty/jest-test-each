@@ -2,7 +2,6 @@ import { getName, NameResult } from './utils/name';
 
 type OneTest<T> = {
   name: NameResult;
-  desc: string | ((k: OneTest<T>) => string);
   flatDesc?: string;
   data: T;
   partialData: T;
@@ -23,7 +22,7 @@ const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Nod
   const currentData = { ...obj };
   const previousData = { ...parent?.fullData };
 
-  const name = getName(obj, maxTestNameLength);
+  const name = getName([obj], maxTestNameLength);
   return {
     name: name.name,
     parent,
@@ -40,7 +39,7 @@ const mergeNodes = <T>(node: Node<T>, child: Node<T>, maxTestNameLength: number)
   const currentData = { ...node.currentData, ...child.currentData };
   const previousData = { ...node.previousData };
 
-  const name = getName(currentData, maxTestNameLength);
+  const name = getName([node.currentData, child.currentData], maxTestNameLength);
   return {
     name: name.name,
     parent: node.parent,
@@ -59,21 +58,19 @@ const mergeNodeAndTest = <T>(
 ): OneTest<T> => {
   const fullData = { ...node.fullData, ...test.partialData };
   const partialData = { ...node.currentData, ...test.partialData };
-  const name = getName(partialData, maxTestNameLength);
+  const name = getName([node.currentData, test.partialData], maxTestNameLength);
 
   return {
-    name: name,
-    desc: (partialData as any).desc || name,
+    name,
     data: fullData,
     partialData,
   };
 };
 
 const createTest = <T>(obj: T, parent: Node<T>, maxTestNameLength: number): OneTest<T> => {
-  const name = getName(obj, maxTestNameLength);
+  const name = getName([obj], maxTestNameLength);
   return {
     name,
-    desc: (obj as any).desc || name.name,
     data: { ...parent.fullData, ...obj },
     partialData: obj,
   };

@@ -1,3 +1,5 @@
+import { merge } from './utils';
+
 export type CodeRename = 'NAME_TOO_LONG' | 'NAME_HAS_FUNCTIONS';
 export enum CODE_RENAME {
   nameTooLong = 'NAME_TOO_LONG',
@@ -18,34 +20,47 @@ export const messageFromRenameCode = (code: CodeRename, maxLength: number) => {
 };
 
 export type NameResult = { name: string; code?: CodeRename };
-export const getName = <T>(obj: T, maxLength: number): NameResult => {
+export const getName = <T>(objs: T[], maxLength: number): NameResult => {
   // should not throw here
-
-  const untypedObj = { ...(obj as any) };
-  const desc = untypedObj.desc;
-  const flatDesc = untypedObj.flatDesc;
+  const descs: string[] = [];
+  const merged = merge(objs);
+  const desc = merged.desc;
+  const flatDesc = merged.flatDesc;
   let code: CodeRename | undefined = undefined;
 
-  if (hasFunction(obj) && !desc && !flatDesc) {
+  if (hasFunction(merged) && !desc && !flatDesc) {
     code = CODE_RENAME.nameHasFunctions;
   }
 
-  const res = () => {
+  const name = (obj: any, flatDesc: string, desc: any) => {
     if (!flatDesc && !desc) {
-      delete untypedObj.desc;
-      return getNameInt(untypedObj);
+      delete obj.desc;
+      return getNameInt(obj);
     }
 
-    return flatDesc || (typeof desc === 'function' ? desc(untypedObj) : desc);
+    return flatDesc || (typeof desc === 'function' ? desc(obj) : desc);
   };
 
-  const result = res();
+  const fullName = name(merged, flatDesc, desc);
 
-  if (result.length > maxLength) {
+  objs.forEach(obj => {
+    const untypedObj = { ...(obj as any) };
+    const descOne = untypedObj.desc;
+    if (descOne) {
+      descs.push(typeof descOne === 'function' ? descOne(untypedObj) : descOne);
+    }
+  });
+
+  const mergedDesc =
+    flatDesc ||
+    (descs.length > 0 && descs.every(p => !!p) ? descs.join(' ') : descs[0]) ||
+    fullName;
+
+  if (mergedDesc.length > maxLength) {
     code = CODE_RENAME.nameTooLong;
   }
 
-  return { name: result, code };
+  return { name: mergedDesc, code };
 };
 
 const getNameInt = (obj: any): string => {

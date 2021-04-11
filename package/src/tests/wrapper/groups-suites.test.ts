@@ -815,7 +815,7 @@ describe('Groups test.Should be suites', () => {
     });
   });
 
-  describe('should be suites - flatDesc', () => {
+  describe('should be no suites - flatDesc', () => {
     its()
       .config(config)
       .each([{ a: '1' }, { a: '2' }])

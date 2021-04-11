@@ -10,41 +10,51 @@ describe('Test.only', () => {
     cleanup();
   });
 
-  xdescribe('Demo: should be 2 tests and one should fail when test.only', () => {
-    its('Demo')
+  describe('should be 2 tests and one should fail when test.only', () => {
+    its()
       .config(config)
       .each([{ a: '1' }, { a: '2' }])
       .each([{ b: '3' }, { b: '4' }])
       //.only()
       .run(t => success());
-  });
 
-  it('should be 2 tests and one should fail when test.only', async () => {
-    test()
-      .config(config)
-      .each([{ a: '1' }, { a: '2' }])
-      .each([{ b: '3' }, { b: '4' }])
-      .only()
-      .run(t => success());
+    it('wrapper', async () => {
+      test()
+        .config(config)
+        .each([{ a: '1' }, { a: '2' }])
+        .each([{ b: '3' }, { b: '4' }])
+        .only()
+        .run(t => success());
 
-    await waitFinished();
+      await waitFinished();
 
-    assertAll(
-      () => expect(result.passes.length).toBe(1),
-      () => expect(result.failures.length).toBe(1),
-      () => expect(result.totalEntities).toBe(3),
-      () =>
-        expect(result.suites).toMatchInlineSnapshot(`
-          Array [
-            "Test pack - root",
-          ]
+      assertAll(() =>
+        expect(result).toMatchInlineSnapshot(`
+          Object {
+            "failures": Array [
+              Object {
+                "message": "Do not forget to remove .only() from your test before committing",
+                "name": "only() should be removed before committing",
+              },
+            ],
+            "passes": Array [
+              Object {
+                "name": "a: 1, b: 3",
+              },
+            ],
+            "skips": Array [],
+            "suites": Array [
+              "Test pack - root",
+            ],
+            "tests": Array [
+              "only() should be removed before committing",
+              "a: 1, b: 3",
+            ],
+            "totalEntities": 3,
+          }
         `),
-      () => expect(result.passes[0].name).toMatchInlineSnapshot(`"a: 1, b: 3"`),
-      () =>
-        expect(result.failures[0].name).toMatchInlineSnapshot(
-          `"only() should be removed before committing"`,
-        ),
-    );
+      );
+    });
   });
 
   it('should fail when test.only and case is not found', async () => {

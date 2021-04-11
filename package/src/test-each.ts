@@ -1,4 +1,4 @@
-import { guard, checkObjEmpty } from './utils/utils';
+import { guard, checkObjEmpty, merge } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
 import { getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
@@ -298,16 +298,16 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     const root = createTree(this.groups, maxTestNameLength, currentTest => {
       let defect = this.findDefect({ ...currentTest.data });
       const additionalData = { ...defect };
-      const fullData = { ...currentTest.data, ...additionalData };
-      const partialData = { ...currentTest.partialData, ...additionalData };
+      const fullData = [currentTest.data, additionalData];
+      const partialData = [currentTest.partialData, additionalData];
       const nameCaseFull = getName(fullData, maxTestNameLength);
       const newName = getName(partialData, maxTestNameLength);
 
       const testCase: OneTest<Combined> = {
         ...currentTest,
-        data: fullData,
+        data: merge(fullData),
         name: newName,
-        partialData,
+        partialData: merge(partialData),
       };
 
       allCases.push({

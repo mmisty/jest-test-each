@@ -17,3 +17,9 @@ export const checkObjEmpty = (obj: any) => {
     }) === '[{}]'
   );
 };
+
+export const merge = (objs: any[]): any => {
+  let res = {};
+  objs.forEach(t => (res = { ...res, ...t }));
+  return res;
+};

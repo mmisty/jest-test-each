@@ -2208,10 +2208,10 @@ jest-snapshot@^26.6.2:
     pretty-format "^26.6.2"
     semver "^7.3.2"
 
-jest-test-each@^0.8.1:
-  version "0.8.1"
-  resolved "https://registry.yarnpkg.com/jest-test-each/-/jest-test-each-0.8.1.tgz#b25991189093f8bbecf57370e31eccd6b9adea76"
-  integrity sha512-AM8fCshvPv9OnVSOHxRfqWwEeiEUa7sYlyq+muHRwmOBslaD8I6EmTHpSQjnlI2k98wBKk5RF89xSUufPCNJIQ==
+jest-test-each@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/jest-test-each/-/jest-test-each-0.8.2.tgz#74fb2e44d413d8a01db7b2366be65e28a9d45660"
+  integrity sha512-hGGSVQxGv9N42/AxzUn67qhm8vLISuXOoa4K1JkPDy2Lw8s6RV3e7h8bOonGEoYlYDpAZaKXCxjTogCvCh/YHw==
 
 jest-util@^26.1.0, jest-util@^26.6.2:
   version "26.6.2"
