@@ -47,8 +47,8 @@ const mergeNodes = <T>(node: Node<T>, child: Node<T>, maxTestNameLength: number)
     fullData,
     currentData,
     previousData,
-    tests: [],
-    children: [],
+    tests: [...child.tests], // todo
+    children: [...child.children],
   };
 };
 
@@ -69,8 +69,91 @@ const mergeNodeAndTest = <T>(
     // flatDesc: (fullData as any).flatDesc // todo
   };
 };
+
+const createTest = <T>(obj: T, parent: Node<T>, maxTestNameLength: number): OneTest<T> => {
+  const name = getName(obj, maxTestNameLength);
+  return {
+    name,
+    desc: (obj as any).desc || name.name,
+    // data: { ...previousData, ...p },
+    data: { ...parent.fullData, ...obj },
+    partialData: obj,
+    // flatDesc: (fullData as any).flatDesc // todo
+  };
+};
+
 // todo any
 const createTree = <T = {}, K = {}>(
+  levels: T[][],
+  additions: K,
+  maxTestNameLength: number,
+  onEachNode?: ((c: Node<T>) => Node<T>) | undefined,
+  onEachTest?: ((t: OneTest<T>) => OneTest<T>) | undefined,
+): Node<T & K> => {
+  const root = createNode({}, maxTestNameLength);
+
+  let levels2 = [...levels];
+
+  const populateNode = <K>(parent: Node<K>, nextLevel: number = 0) => {
+    for (const [levelNum, cases] of levels2.entries()) {
+      if (nextLevel !== levelNum) {
+        continue;
+      }
+      const previousData = { ...parent.fullData }; // additions
+      const normalized = typeof cases === 'function' ? (cases as any)(previousData) : cases;
+
+      if (levelNum < levels2.length - 1) {
+        if (normalized.length === 1) {
+          const obj = { ...normalized[0] }; ///, ...additions
+          const node = createNode(obj, maxTestNameLength, parent);
+
+          populateNode(node, levelNum + 1);
+
+          if (node.tests.length > 0) {
+            node.tests.forEach(tt => {
+              parent.tests.push(mergeNodeAndTest(node, tt, maxTestNameLength));
+            });
+          } else {
+            const merged = mergeNodes(parent, node, maxTestNameLength);
+            if (parent.parent) {
+              parent.parent?.children.push(merged);
+            } else {
+              parent.children.push(merged);
+            }
+          }
+        } else {
+          normalized.forEach((p: any) => {
+            const child_ = createNode(p, maxTestNameLength, parent);
+            const child = onEachNode ? onEachNode(child_) : child_;
+            populateNode(child, levelNum + 1);
+
+            if (child.children.length > 1 || child.tests.length > 1) {
+              parent.children.push(child as Node<any>);
+            } else if (child.children.length === 1) {
+              parent.children.push(mergeNodes(child, child.children[0], maxTestNameLength));
+            } else {
+              child.tests.forEach((tt: any) => {
+                parent.tests.push(mergeNodeAndTest(child, tt, maxTestNameLength));
+              });
+            }
+          });
+        }
+      } else {
+        normalized.forEach((p: T) => {
+          const test_ = createTest(p, parent as Node<any>, maxTestNameLength);
+          const test = onEachTest ? onEachTest(test_) : test_;
+          parent.tests.push(test as OneTest<any>);
+        });
+      }
+    }
+  };
+
+  populateNode(root);
+  return (root as any) as Node<T & K>;
+};
+
+// todo any
+const createTreeBackup = <T = {}, K = {}>(
   levels: T[][],
   additions: K,
   maxTestNameLength: number,
@@ -101,33 +184,37 @@ const createTree = <T = {}, K = {}>(
           const test = onEachTest ? onEachTest(test_) : test_;
           node.tests.push(test as OneTest<any>);
         });
-        return;
+        //return;
+        //continue;
       } else {
         if (newCases.length === 1) {
           const obj = { ...newCases[0], ...additions };
           const newNode = createNode(obj, maxTestNameLength, node);
-          //const newNode = mergeNodes(node, obj, maxTestNameLength);
+
           populateNodes(newNode, levelNum + 1);
+
           if (newNode.children.length === 1) {
             node = mergeNodes(newNode, newNode, maxTestNameLength); //todo
+          } else {
+            newNode.tests.forEach(tt => {
+              node.tests.push(mergeNodeAndTest(newNode, tt, maxTestNameLength));
+            });
           }
-          const nodeee = { ...newNode };
-          nodeee.tests.forEach(tt => {
-            node.tests.push(mergeNodeAndTest(newNode, tt, maxTestNameLength));
-          });
         } else {
           newCases.forEach((p: any) => {
             const child_ = createNode(p, maxTestNameLength, node);
             const child = onEachNode ? onEachNode(child_) : child_;
             populateNodes(child, levelNum + 1);
-            
-            if (child.children.length > 1 || child.tests.length > 1) {
+
+            if (child.children.length > 1) {
               node.children.push(child as Node<any>);
+            } else if (child.tests.length > 1) {
+              node.children.push(child as Node<any>);
+              //node = mergeNodes(node, child, maxTestNameLength); //todo
             } else if (child.children.length === 1) {
-              node = mergeNodes(child, child, maxTestNameLength); //todo
+              node = mergeNodes(node, child, maxTestNameLength); //todo
             } else {
-              const nodeee = { ...child };
-              nodeee.tests.forEach((tt: any) => {
+              child.tests.forEach((tt: any) => {
                 node.tests.push(mergeNodeAndTest(child, tt, maxTestNameLength));
               });
             }
