@@ -1,6 +1,6 @@
 {
   "name": "jest-test-each",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "run parametrised tests easily [typesafe] without text tables or arrays of arrays.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

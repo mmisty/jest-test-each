@@ -1,10 +1,9 @@
-import { guard } from './utils/utils';
+import { guard, checkObjEmpty } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
 import { getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
 import { testConfig, testEnvDefault, TestSetupType, userEnv } from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
-import { checkObjEmpty } from './tests/utils/utils';
 
 const stripAnsi = require('strip-ansi');
 
