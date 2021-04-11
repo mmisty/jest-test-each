@@ -109,18 +109,52 @@ const createTree = <T = {}, K = {}>(
 
           populateNode(node, levelNum + 1);
 
-          if (node.tests.length > 0) {
+          /*if (node.tests.length > 0) {
             node.tests.forEach(tt => {
               parent.tests.push(mergeNodeAndTest(node, tt, maxTestNameLength));
             });
           } else {
-            const merged = mergeNodes(parent, node, maxTestNameLength);
-            if (parent.parent) {
-              parent.parent?.children.push(merged);
-            } else {
+            node.children.forEach(c => {
+              const merged = mergeNodes(node, c, maxTestNameLength);
+              // if (parent.parent) {
+              //parent.parent?.children.push(merged);
+              // } else {
               parent.children.push(merged);
-            }
-          }
+              //  }
+              //parent.parent?.children.push(mergeNodes(node, c, maxTestNameLength));
+            });
+          }*/
+            
+            if (node.children.length > 0 || node.tests.length > 0) {
+              const merged = mergeNodes(parent, node, maxTestNameLength);
+              
+              /*node.tests.forEach(tt => {
+                parent.tests.push(mergeNodeAndTest(node, tt, maxTestNameLength));
+              });*/
+              if(merged.tests.length === 1){
+                parent.tests.push( mergeNodeAndTest(merged, merged.tests[0], maxTestNameLength));
+              }
+              else{
+                if (parent.parent) {
+                  parent.parent?.children.push(merged);
+                }
+                else {
+                  parent.children.push(merged);
+                }
+              }
+              
+              
+          } /*else {
+            node.children.forEach(c => {
+              const merged = mergeNodes(node, c, maxTestNameLength);
+              // if (parent.parent) {
+              //parent.parent?.children.push(merged);
+              // } else {
+              parent.children.push(merged);
+              //  }
+              //parent.parent?.children.push(mergeNodes(node, c, maxTestNameLength));
+            });*/
+          //}
         } else {
           normalized.forEach((p: any) => {
             const child_ = createNode(p, maxTestNameLength, parent);

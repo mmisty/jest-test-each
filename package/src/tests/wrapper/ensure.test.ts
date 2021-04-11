@@ -29,22 +29,23 @@ describe('Test.ensure', () => {
               "name": "Ensure: something",
             },
             Object {
-              "name": "a: 1, b: 3",
+              "name": "b: 3",
             },
             Object {
-              "name": "a: 1, b: 4",
+              "name": "b: 4",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
+            "a: 1",
           ],
           "tests": Array [
             "Ensure: something",
-            "a: 1, b: 3",
-            "a: 1, b: 4",
+            "b: 3",
+            "b: 4",
           ],
-          "totalEntities": 4,
+          "totalEntities": 5,
         }
       `),
     );
@@ -74,22 +75,23 @@ describe('Test.ensure', () => {
           ],
           "passes": Array [
             Object {
-              "name": "a: 1, b: 3",
+              "name": "b: 3",
             },
             Object {
-              "name": "a: 1, b: 4",
+              "name": "b: 4",
             },
           ],
           "skips": Array [],
           "suites": Array [
             "Test pack - root",
+            "a: 1",
           ],
           "tests": Array [
             "Ensure: something",
-            "a: 1, b: 3",
-            "a: 1, b: 4",
+            "b: 3",
+            "b: 4",
           ],
-          "totalEntities": 4,
+          "totalEntities": 5,
         }
       `),
     );
