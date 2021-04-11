@@ -68,40 +68,16 @@ export const waitFinished = async () => {
 };
 
 const testRunner = ((name: string, body: () => Promise<void>) => {
-  // console.log('Test started: ' + name);
   started.s.push(name);
-  let wasError = false;
   result.totalEntities++;
   result.tests.push(name);
-  let isPromise = false;
 
-  try {
-    const resultBody = body();
-    if ((resultBody as any).then) {
-      isPromise = true;
-      resultBody
-        .then(k => {
-          result.passes.push({ name: name });
-        })
-        .catch(err => {
-          result.failures.push({ name, message: stripAnsi(err.message) });
-        })
-        .finally(() => {
-          started.s.pop();
-        });
-    }
-  } catch (err) {
-    wasError = true;
-    result.failures.push({ name, message: stripAnsi(err.message) });
-    // console.log('Test has error:\n===\n' + err + '\n===')
-  }
-  if (!isPromise) {
-    started.s.pop();
-  }
-
-  if (!isPromise && !wasError) {
-    result.passes.push({ name: name });
-    // console.log('Test passed\n===');
+  const resultBody = body();
+  if ((resultBody as any).then) {
+    resultBody
+      .then(k => result.passes.push({ name: name }))
+      .catch(err => result.failures.push({ name, message: stripAnsi(err.message) }))
+      .finally(() => started.s.pop());
   }
 }) as TestRunner;
 
