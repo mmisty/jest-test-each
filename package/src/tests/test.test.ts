@@ -13,7 +13,7 @@ describe('test examples', () => {
       expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
     });
 
-  describe('Flat description8989', ()=>{
+  describe('Flat description8989', () => {
     its()
       .each([
         { input: 0, expected: '0' },
@@ -25,10 +25,9 @@ describe('test examples', () => {
       .run(t => {
         expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
       });
-  
-  })
-  
-  describe('Flat description - multiplication with functions', ()=>{
+  });
+
+  describe('Flat description - multiplication with functions', () => {
     its()
       .each([
         { input: 0, expected: '0' },
@@ -36,17 +35,12 @@ describe('test examples', () => {
         { input: 102.99998, expected: '103' },
         { input: -6, expected: '-6' },
       ])
-      .each(t => [
-       // { gop: t.input },
-        { gop: t.input+1 }])
-      .each(t => [
-       // { gop: t.input },
-        { sop: t.input+2 }])
+      .each(t => [{ gop: t.input + 1 }])
+      .each(t => [{ sop: t.input + 2 }])
       .run(t => {
         expect(Math.round(t.input).toFixed(0)).toBe(t.expected);
       });
-  
-  })
+  });
   its('User defined description for test')
     .each([
       { input: 0, expected: '0', desc: 'Special case - zero' },

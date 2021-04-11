@@ -11,6 +11,43 @@ describe('Test.before', () => {
   });
   const befores: { disposed: string[] } = { disposed: [] };
 
+  it('before without args', async () => {
+    test()
+      .config(config)
+      .before(() => {
+        return {
+          result: 'bb',
+          dispose: () => {},
+        };
+      })
+      .run((t, b) => {
+        expect(b.result).toBe('bb');
+      });
+
+    await waitFinished();
+
+    assertAll(
+      () => expect(befores.disposed.length).toBe(0),
+      () =>
+        expect(result).toMatchInlineSnapshot(`
+          Object {
+            "failures": Array [],
+            "passes": Array [
+              Object {
+                "name": "Test pack - root",
+              },
+            ],
+            "skips": Array [],
+            "suites": Array [],
+            "tests": Array [
+              "Test pack - root",
+            ],
+            "totalEntities": 1,
+          }
+        `),
+    );
+  });
+
   it('should pass test with .before', async () => {
     test()
       .config(config)

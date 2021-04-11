@@ -1,4 +1,4 @@
-import { guard, mergeIntoOne } from './utils/utils';
+import { guard } from './utils/utils';
 import { OneTest, treeWalk, createTree } from './tree';
 import { getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
@@ -21,15 +21,14 @@ type Input<T, TOut> = SimpleCase<TOut>[] | FuncCase<T, TOut>;
 
 type DescFunc<T> = (k: T) => string;
 type WithComplexDesc<T> = { desc?: string | DescFunc<T> };
-type OnlyInput<T> = (t: T) => boolean;
+type InputFilter<T> = (t: T) => boolean;
 
 type Before<T> = T & Disposable;
 type BeforeOut<T> = Promise<Before<T>> | Before<T>;
 type BeforeInput<T, TOut> = (t: T) => BeforeOut<TOut> | void;
-type Defect<T> = { reason: string; filter: OnlyInput<T> | undefined; failReasons?: string[] };
+type Defect<T> = { reason: string; filter: InputFilter<T> | undefined; failReasons?: string[] };
 
 export class TestEach<Combined = {}, BeforeT = {}> {
-  private additions: SimpleCase<{}>[] = [];
   private groups: Combined[][] = [];
   private befores: BeforeInput<Combined, BeforeT>[] = [];
   private ensures: { desc: string; check: (t: Combined[]) => void }[] = [];
@@ -41,7 +40,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   private skippedTest: string | undefined = undefined;
   private onlyOne: boolean = false;
   private concurrentTests: boolean = false;
-  private onlyOneFilter: OnlyInput<Combined> | undefined = undefined;
+  private onlyOneFilter: InputFilter<Combined> | undefined = undefined;
 
   private readonly desc: string | undefined = '';
   private readonly env: Env;
@@ -51,13 +50,9 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     this.conf = testConfig.config;
 
     this.env = userEnv.env ?? testEnvDefault().env;
-
-    if (!this.env) {
-      throw new Error('Please specify test env (jest/mocha) like');
-    }
   }
 
-  only(input?: OnlyInput<Combined>): TestEach<Combined, BeforeT> {
+  only(input?: InputFilter<Combined>): TestEach<Combined, BeforeT> {
     this.onlyOne = true;
     if (input) {
       this.onlyOneFilter = input;
@@ -88,7 +83,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
   defect(
     reason: string,
-    input?: OnlyInput<Combined>,
+    input?: InputFilter<Combined>,
     actualFailReasons?: string[],
   ): TestEach<Combined, BeforeT> {
     this.defects.push({ reason: reason, filter: input, failReasons: actualFailReasons });
@@ -101,15 +96,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
   }
 
   before<TOut>(before: BeforeInput<Combined, TOut>): TestEach<Combined, BeforeT & TOut> {
-    this.befores.push(before as any);
-    return this as any;
-  }
-
-  /**
-   * Will add specified object to each test case
-   */
-  add<TOut>(input: SimpleCase<TOut>): TestEach<Combined & TOut, BeforeT> {
-    this.additions.push(input as any);
+    this.befores.push(before as BeforeInput<Combined, any>);
     return this as any;
   }
 
@@ -309,11 +296,9 @@ export class TestEach<Combined = {}, BeforeT = {}> {
 
     let allCases: OneTest<Combined>[] = [];
 
-    const additions = mergeIntoOne(this.additions);
-
-    const root = createTree(this.groups, additions, maxTestNameLength, undefined, currentTest => {
-      let defect = this.findDefect({ ...currentTest.data, ...additions });
-      const additionalData = { ...additions, ...defect };
+    const root = createTree(this.groups, maxTestNameLength, currentTest => {
+      let defect = this.findDefect({ ...currentTest.data });
+      const additionalData = { ...defect };
       const fullData = { ...currentTest.data, ...additionalData };
       const partialData = { ...currentTest.partialData, ...additionalData };
       const nameCaseFull = getName(fullData, maxTestNameLength);
