@@ -4,7 +4,7 @@ export const guard = (condition: boolean, message: string) => {
   }
 };
 
-export const checkObjEmpty = (obj: any) => {
+export const checkObjEmpty = (obj: any[]) => {
   return (
     JSON.stringify(obj, (k, v) => {
       if (typeof v === 'function') {

@@ -1,18 +1,14 @@
 import { guard, checkObjEmpty, merge } from './utils/utils';
-import { OneTest, treeWalk, createTree } from './tree';
+import { OneTest, treeWalk, createTree, ErrorEmitter } from './tree';
 import { getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
 import { testConfig, testEnvDefault, TestSetupType, userEnv } from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
+import { CaseAddition, WithDefect, WithDesc } from './types';
 
 const stripAnsi = require('strip-ansi');
 
-type WithDesc = { desc?: string };
-type WithFlatDesc = { flatDesc?: string };
-type WithDefect = { defect?: string; actualFailReasonParts?: string[] };
-type WithSkip = { skip?: string };
-
-type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & WithFlatDesc & WithDefect & WithSkip;
+type InputCaseType<T> = T & (WithDesc | WithComplexDesc<T>) & CaseAddition;
 type Disposable = { dispose?: () => void };
 type SimpleCase<T> = InputCaseType<T>;
 type FuncCase<T, TOut> = (t: T) => SimpleCase<TOut[]>; // todo desc as func doesn't work for cases as func
@@ -27,7 +23,7 @@ type BeforeOut<T> = Promise<Before<T>> | Before<T>;
 type BeforeInput<T, TOut> = (t: T) => BeforeOut<TOut> | void;
 type Defect<T> = { reason: string; filter: InputFilter<T> | undefined; failReasons?: string[] };
 
-export class TestEach<Combined = {}, BeforeT = {}> {
+export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
   private groups: Combined[][] = [];
   private befores: BeforeInput<Combined, BeforeT>[] = [];
   private ensures: { desc: string; check: (t: Combined[]) => void }[] = [];
@@ -111,13 +107,13 @@ export class TestEach<Combined = {}, BeforeT = {}> {
     args?: Combined,
     isBefore?: boolean,
   ) {
-    const skipped = (args as SimpleCase<Combined>)?.skip || this.skippedTest;
-    const markedDefect = (args as SimpleCase<Combined>)?.defect;
+    const skipped = args?.skip || this.skippedTest;
+    const markedDefect = args?.defect;
     const defectTestName = markedDefect ? ` - Marked with defect '${markedDefect}'` : '';
     const testName = markedDefect ? name + defectTestName : name;
     //? name.replace(/(, )?defect\:\s*('|"|`)[^'"`]*('|"|`)/, '') + defectTestName
 
-    const reasons = (args as SimpleCase<Combined>)?.actualFailReasonParts;
+    const reasons = args?.actualFailReasonParts;
 
     return testRunner(testName, async () => {
       if (skipped) {
@@ -294,8 +290,8 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       : this.env.it;
 
     let allCases: OneTest<Combined>[] = [];
-
-    const root = createTree(this.groups, maxTestNameLength, currentTest => {
+    let casesErrors: ErrorEmitter[] = [];
+    const root = createTree(this.groups, maxTestNameLength, casesErrors, currentTest => {
       let defect = this.findDefect({ ...currentTest.data });
       const additionalData = { ...defect };
       const fullData = [currentTest.data, additionalData];
@@ -342,6 +338,7 @@ export class TestEach<Combined = {}, BeforeT = {}> {
         !this.groups.some(p => checkObjEmpty(p)),
         'Every case in .each should have not empty data',
       );
+      guard(!(allCases.length === 0), 'Test should have at least one test');
     };
 
     const tests = () =>
@@ -359,6 +356,17 @@ export class TestEach<Combined = {}, BeforeT = {}> {
       this.env.describe,
       () => {
         suiteGuards();
+        if (casesErrors.length > 0) {
+          const defaultErr = 'test cases are empty';
+          casesErrors.forEach(casesError => {
+            this.runTest(testRunner, casesError.test || defaultErr, () => {
+              throw new Error(
+                [casesError.msg || defaultErr, casesError.details || ''].join('\n\n'),
+              );
+            });
+          });
+        }
+
         if (!this.onlyOne) {
           this.runEnsures(testRunner, allCases);
         }

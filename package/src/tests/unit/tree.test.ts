@@ -2,7 +2,7 @@ import { createTree, Node } from '../../tree';
 
 describe('tree units', function () {
   const tree = (data: any[][]) => {
-    const root = createTree(data, 100);
+    const root = createTree(data, 100, [], undefined);
     let result: string[] = [];
     const byTree = (node: Node<any>, level: number) => {
       result.push(' '.repeat(level * 2) + 'suite: ' + node.name);

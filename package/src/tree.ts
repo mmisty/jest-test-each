@@ -1,4 +1,5 @@
 import { getName, NameResult } from './utils/name';
+import { CaseAddition } from './types';
 
 type OneTest<T> = {
   name: NameResult;
@@ -23,7 +24,7 @@ const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Nod
   const previousData = { ...parent?.fullData };
 
   const name = getName([obj], maxTestNameLength);
-  return {
+  const node = {
     name: name.name,
     parent,
     fullData,
@@ -32,6 +33,7 @@ const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Nod
     tests: [],
     children: [],
   };
+  return node;
 };
 
 const mergeNodes = <T>(node: Node<T>, child: Node<T>, maxTestNameLength: number): Node<T> => {
@@ -46,7 +48,7 @@ const mergeNodes = <T>(node: Node<T>, child: Node<T>, maxTestNameLength: number)
     fullData,
     currentData,
     previousData,
-    tests: [...child.tests],
+    tests: [...node.tests, ...child.tests],
     children: [...child.children],
   };
 };
@@ -75,73 +77,79 @@ const createTest = <T>(obj: T, parent: Node<T>, maxTestNameLength: number): OneT
     partialData: obj,
   };
 };
+export type ErrorEmitter = { msg?: string; test?: string; details?: string };
 
 // todo any
-const createTree = <T = {}>(
+const createTree = <T extends CaseAddition>(
   levels: T[][],
   maxTestNameLength: number,
-  onEachTest?: ((t: OneTest<T>) => OneTest<T>) | undefined,
+  errors: ErrorEmitter[],
+  onEachTest: ((t: OneTest<T>) => OneTest<T>) | undefined,
 ): Node<T> => {
   const root = createNode({}, maxTestNameLength);
 
   let levels2 = [...levels];
 
-  const populateNode = <K>(parent: Node<K>, nextLevel: number = 0) => {
-    for (const [levelNum, cases] of levels2.entries()) {
-      if (nextLevel !== levelNum) {
-        continue;
-      }
+  const populateNode = <K extends CaseAddition>(parent: Node<K>, nextLevel: number = 0) => {
+    const levelNum = nextLevel;
+    const cases = levels2.length > 0 ? levels2[levelNum] : [];
+    const previousData = { ...parent.fullData };
+    const normalized = typeof cases === 'function' ? (cases as any)(previousData) : cases;
 
-      const previousData = { ...parent.fullData };
-      const normalized = typeof cases === 'function' ? (cases as any)(previousData) : cases;
-
-      if (levelNum < levels2.length - 1) {
-        if (normalized.length === 1) {
-          const obj = { ...normalized[0] };
-          const node = createNode(obj, maxTestNameLength, parent);
-
-          populateNode(node, levelNum + 1);
-
-          if (node.children.length > 0 || node.tests.length > 0) {
-            const merged = mergeNodes(parent, node, maxTestNameLength);
-
-            if (merged.tests.length === 1) {
-              parent.tests.push(mergeNodeAndTest(merged, merged.tests[0], maxTestNameLength));
-            } else {
-              if (parent.parent) {
-                parent.parent.children.push(merged);
-              } else {
-                parent.children.push(merged);
-              }
-            }
-          }
-        } else {
-          normalized.forEach((p: any) => {
-            const child = createNode(p, maxTestNameLength, parent);
-            populateNode(child, levelNum + 1);
-
-            if (child.children.length > 1 || child.tests.length > 1) {
-              parent.children.push(child as Node<any>);
-            } else if (child.children.length === 1) {
-              parent.children.push(mergeNodes(child, child.children[0], maxTestNameLength));
-            } else {
-              child.tests.forEach((test: any) => {
-                parent.tests.push(mergeNodeAndTest(child, test, maxTestNameLength));
-              });
-            }
-          });
-        }
-      } else {
-        normalized.forEach((p: T) => {
-          const test_ = createTest(p, parent as Node<any>, maxTestNameLength);
-          const test = onEachTest ? onEachTest(test_) : test_;
-          parent.tests.push(test as OneTest<any>);
-        });
-      }
+    if (normalized.length === 0 && !previousData.isEmpty) {
+      errors.push({
+        msg:
+          'every .each should have non empty cases.\nIf it is expected mark cases with "isEmpty:true"',
+        test: typeof cases === 'function' ? `${cases}` : `${JSON.stringify(cases)}`,
+        details: `${
+          typeof cases === 'function'
+            ? `each '${cases}' evaluated to an empty array.\n\tArgs {${JSON.stringify(
+                previousData,
+              )}}`
+            : ''
+        }`,
+      });
     }
+
+    if (levelNum === levels2.length - 1) {
+      normalized.forEach((p: T) => {
+        const test_ = createTest(p, parent as Node<any>, maxTestNameLength);
+        const test = onEachTest ? onEachTest(test_) : test_;
+        parent.tests.push(test as OneTest<any>);
+      });
+      return;
+    }
+
+    normalized.forEach((p: any) => {
+      const node = createNode(p, maxTestNameLength, parent);
+      populateNode(node, levelNum + 1);
+
+      if (node.children.length === 1 && node.tests.length === 0) {
+        const newNode = mergeNodes(node, node.children[0], maxTestNameLength);
+        node.tests = newNode.tests;
+        node.children = newNode.children;
+        node.previousData = newNode.previousData;
+        node.fullData = newNode.fullData;
+        node.currentData = newNode.currentData;
+        node.name = newNode.name;
+      }
+
+      if (node.tests.length === 1 && node.children.length === 0) {
+        const test = mergeNodeAndTest(node, node.tests[0], maxTestNameLength);
+        node.parent?.tests.push(test) || parent.tests.push(test);
+        return;
+      }
+      
+      if(node.tests.length === 0 && node.children.length ===0 ){
+        return;
+      }
+      
+      parent.children.push(node as Node<any>);
+    });
   };
 
   populateNode(root);
+
   return (root as any) as Node<T>;
 };
 
