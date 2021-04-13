@@ -16,14 +16,22 @@ export type TestSetupType = {
   /**
    * Max length of case name - on reaching it will ask to sepcify explicit description for case
    */
-  maxTestNameLength: number;
+  //maxTestNameLength: number;
+  testSuiteName: {
+    maxLength: number;
+    failOnReached: boolean;
+    // todo full name check
+  };
 };
 
 export const testConfigDefault: TestSetupType = {
   numericCases: true,
   groupBySuites: true,
   concurrent: false,
-  maxTestNameLength: 200,
+  testSuiteName: {
+    maxLength: 200,
+    failOnReached: true,
+  },
 };
 
 export const testConfig: { config: TestSetupType } = {

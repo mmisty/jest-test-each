@@ -237,7 +237,7 @@ describe('naming', () => {
 
   it('case length configuration', async () => {
     test()
-      .config({ maxTestNameLength: 10 })
+      .config({ testSuiteName: { maxLength: 10, failOnReached: true } })
       .each([{ a: 'supersupersuper' }])
       .run(t => success());
 
@@ -248,9 +248,149 @@ describe('naming', () => {
         Array [
           Object {
             "message": "From guard: Automatic test name is too long (>10symbols). Please add 'desc' to case.",
-            "name": "a: supersupersuper",
+            "name": "a: supersu...",
           },
         ]
+      `),
+    );
+  });
+
+  it('case length configuration - suite', async () => {
+    test()
+      .config({ testSuiteName: { maxLength: 50, failOnReached: true } })
+      .each([
+        {
+          a: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 11, 17].map(p => ({
+            aa: p,
+          })),
+        },
+      ])
+      .each(t => t.a)
+      .run(t => success());
+
+    await waitFinished();
+
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+        Object {
+          "failures": Array [],
+          "passes": Array [
+            Object {
+              "name": "aa: 1",
+            },
+            Object {
+              "name": "aa: 2",
+            },
+            Object {
+              "name": "aa: 3",
+            },
+            Object {
+              "name": "aa: 4",
+            },
+            Object {
+              "name": "aa: 5",
+            },
+            Object {
+              "name": "aa: 6",
+            },
+            Object {
+              "name": "aa: 7",
+            },
+            Object {
+              "name": "aa: 8",
+            },
+            Object {
+              "name": "aa: 9",
+            },
+            Object {
+              "name": "aa: 10",
+            },
+            Object {
+              "name": "aa: 11",
+            },
+            Object {
+              "name": "aa: 12",
+            },
+            Object {
+              "name": "aa: 12",
+            },
+            Object {
+              "name": "aa: 13",
+            },
+            Object {
+              "name": "aa: 14",
+            },
+            Object {
+              "name": "aa: 15",
+            },
+            Object {
+              "name": "aa: 16",
+            },
+            Object {
+              "name": "aa: 11",
+            },
+            Object {
+              "name": "aa: 17",
+            },
+          ],
+          "skips": Array [],
+          "suites": Array [
+            "Test pack - root",
+            "a: [{ aa: 1 }, { aa: 2 }, { aa: 3 }, { aa: 4 }, { ...",
+          ],
+          "tests": Array [
+            "aa: 1",
+            "aa: 2",
+            "aa: 3",
+            "aa: 4",
+            "aa: 5",
+            "aa: 6",
+            "aa: 7",
+            "aa: 8",
+            "aa: 9",
+            "aa: 10",
+            "aa: 11",
+            "aa: 12",
+            "aa: 12",
+            "aa: 13",
+            "aa: 14",
+            "aa: 15",
+            "aa: 16",
+            "aa: 11",
+            "aa: 17",
+          ],
+          "totalEntities": 21,
+        }
+      `),
+    );
+  });
+
+  it('case length configuration - not fail', async () => {
+    test()
+      .config({ testSuiteName: { maxLength: 10, failOnReached: false } })
+      .each([{ a: 'supersupersuper' }])
+      .run(t => success());
+
+    await waitFinished();
+
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+        Object {
+          "failures": Array [],
+          "passes": Array [
+            Object {
+              "name": "a: supersu...",
+            },
+          ],
+          "skips": Array [],
+          "suites": Array [
+            "Test pack - root",
+          ],
+          "tests": Array [
+            "a: supersu...",
+          ],
+          "totalEntities": 2,
+        }
       `),
     );
   });

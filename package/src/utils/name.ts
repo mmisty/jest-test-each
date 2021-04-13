@@ -51,13 +51,14 @@ export const getName = <T>(objs: T[], maxLength: number): NameResult => {
     }
   });
 
-  const mergedDesc =
+  let mergedDesc =
     flatDesc ||
     (descs.length > 0 && descs.every(p => !!p) ? descs.join(' ') : descs[0]) ||
     fullName;
 
   if (mergedDesc.length > maxLength) {
     code = CODE_RENAME.nameTooLong;
+    mergedDesc = mergedDesc.substr(0, maxLength) + '...';
   }
 
   return { name: mergedDesc, code };

@@ -1,6 +1,6 @@
 import { guard, checkObjEmpty, merge } from './utils/utils';
 import { OneTest, treeWalk, createTree, ErrorEmitter } from './tree';
-import { getName, messageFromRenameCode } from './utils/name';
+import { CODE_RENAME, getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
 import { testConfig, testEnvDefault, TestSetupType, userEnv } from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
@@ -192,7 +192,14 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
         name,
         async (args, b) => {
           const code = t.name.code;
-          guard(!code, messageFromRenameCode(code!, this.conf.maxTestNameLength));
+
+          if (
+            (this.conf.testSuiteName.failOnReached && code === CODE_RENAME.nameTooLong) ||
+            code === CODE_RENAME.nameHasFunctions
+          ) {
+            guard(!code, messageFromRenameCode(code!, this.conf.testSuiteName.maxLength));
+          }
+
           await body(args, b);
         },
         t.data,
@@ -280,7 +287,8 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
   };
 
   run(body: (each: Combined, before: BeforeT) => void) {
-    const { groupBySuites, maxTestNameLength } = this.conf;
+    const { groupBySuites, testSuiteName } = this.conf;
+    const maxTestNameLength = testSuiteName.maxLength;
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
 
     const testRunner = this.onlyOne

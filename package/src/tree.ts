@@ -25,7 +25,7 @@ const createNode = <T>(obj: T, maxTestNameLength: number, parent?: Node<T>): Nod
 
   const name = getName([obj], maxTestNameLength);
   const node = {
-    name: name.name,
+    name: name.name, // todo use code for suite as well
     parent,
     fullData,
     currentData,
@@ -139,11 +139,11 @@ const createTree = <T extends CaseAddition>(
         node.parent?.tests.push(test) || parent.tests.push(test);
         return;
       }
-      
-      if(node.tests.length === 0 && node.children.length ===0 ){
+
+      if (node.tests.length === 0 && node.children.length === 0) {
         return;
       }
-      
+
       parent.children.push(node as Node<any>);
     });
   };
