@@ -9,7 +9,9 @@ describe('Test.ensure', () => {
   beforeEach(() => {
     cleanup();
   });
-
+  
+  // todo repeat
+ // todo: ensure should check specific level + previous levels
   it('should run additional test when ensure', async () => {
     test()
       .config(config)

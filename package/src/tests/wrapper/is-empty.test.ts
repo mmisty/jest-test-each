@@ -84,13 +84,81 @@ describe('Should fail when not isEmpty and empty cases', () => {
   });
 
   describe('Simple - is empty false and other cases - should fail', () => {
-   /* its('test')
+    /* its('test')
       .config(config)
       .each([{ addition: 'abc' }])
       .each([{ cases: [{ a: 1 }] }, { cases: [] }])
       .each(t => t.cases)
       .run(() => success());*/
+
+    it('wrapper', async () => {
+      test()
+        .config(config)
+        .each([{ addition: 'abc' }])
+        .each([{ cases: [{ a: 1 }] }, { cases: [] }])
+        .each(t => t.cases)
+        .run(() => success());
+
+      await waitFinished();
+
+      assertAll(() =>
+        expect(result).toMatchInlineSnapshot(`
+          Object {
+            "failures": Array [
+              Object {
+                "message": "every .each should have non empty cases.
+          If it is expected mark cases with \\"isEmpty:true\\"
+
+          each 't => t.cases' evaluated to an empty array.
+          	Args {{\\"addition\\":\\"abc\\",\\"cases\\":[]}}",
+                "name": "t => t.cases",
+              },
+            ],
+            "passes": Array [
+              Object {
+                "name": "addition: abc, cases: [{ a: 1 }], a: 1",
+              },
+            ],
+            "skips": Array [],
+            "suites": Array [
+              "Test pack - root",
+            ],
+            "tests": Array [
+              "t => t.cases",
+              "addition: abc, cases: [{ a: 1 }], a: 1",
+            ],
+            "totalEntities": 3,
+          }
+        `),
+      );
+    });
+  });
+
+  describe('Simple - is empty true all cases should have', () => {
+    // todo:should check previous levels
     
+    /* its('test')
+      .config(config)
+      .each([
+        { num: 1, cases: [{ a: 1 }, { a: 2 }, { a: 3 }] },
+        { num: 2, cases: [{ a: 5 }, { a: 6 }] },
+        { num: 3, cases: [], isEmpty: true },
+      ])
+      .ensure('cases ensure', t =>
+        expect(t.map(p => p.num)).toMatchInlineSnapshot(`
+          Array [
+            1,
+            1,
+            1,
+            2,
+            2,
+            3,
+          ]
+        `),
+      )
+      .each(t => t.cases)
+      .run(() => success());*/
+
     it('wrapper', async () => {
       test()
         .config(config)

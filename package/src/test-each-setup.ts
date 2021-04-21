@@ -16,11 +16,10 @@ export type TestSetupType = {
   /**
    * Max length of case name - on reaching it will ask to sepcify explicit description for case
    */
-  //maxTestNameLength: number;
+  // todo full name check
   testSuiteName: {
-    maxLength: number;
+    maxLength: number; // be aware - teamcity doesn't show test results which names are longer than 512
     failOnReached: boolean;
-    // todo full name check
   };
 };
 

@@ -66,6 +66,7 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
     return this;
   }
 
+  // todo: should be ability to check previous levels
   ensure(desc: string, cases: (t: Combined[]) => void): TestEach<Combined, BeforeT> {
     this.ensures.push({ desc, check: cases });
     return this;
