@@ -4,7 +4,14 @@ import { assertAll, success } from '../utils/utils';
 const rootName = 'Test pack - root';
 const test = () => createTest(rootName);
 const config = { groupBySuites: true, numericCases: false, concurrent: false };
-
+const removeStack = (callback: () => void) => {
+  try {
+    callback();
+  } catch (e) {
+    e.stack = e.stack.replace(/^\s*at\s*.*/gm, '').replace(/\n\n/gm, '');
+    throw e;
+  }
+};
 describe('Test with defect', () => {
   beforeEach(() => {
     cleanup();
@@ -45,7 +52,7 @@ describe('Test with defect', () => {
     test()
       .config(config)
       .each([{ a: '1', expected: '0', defect: 'some' }])
-      .run(t => expect(t.a).toBe(t.expected));
+      .run(t => removeStack(() => expect(t.a).toBe(t.expected)));
 
     await waitFinished();
 
@@ -62,6 +69,8 @@ describe('Test with defect', () => {
             "Test marked with defect 'some': Actual fail reason:\\\\n expect(received).toBe(expected) // Object.is equality
 
         Expected: \\"0\\"
+        Received: \\"1\\"
+        Error: expect(received).toBe(expected) // Object.is equalityExpected: \\"0\\"
         Received: \\"1\\"",
           ],
           "suites": Array [
@@ -82,7 +91,7 @@ describe('Test with defect', () => {
       .each([{ a: '1' }, { a: '3' }])
       .each([{ b: '2', expected: '3' }])
       .defect('SOME_ID', t => t.a === '1')
-      .run(t => expect(t.a).toBe(t.expected));
+      .run(t => removeStack(() => expect(t.a).toBe(t.expected)));
 
     await waitFinished();
 
@@ -102,6 +111,8 @@ describe('Test with defect', () => {
             "Test marked with defect 'SOME_ID': Actual fail reason:\\\\n expect(received).toBe(expected) // Object.is equality
 
         Expected: \\"3\\"
+        Received: \\"1\\"
+        Error: expect(received).toBe(expected) // Object.is equalityExpected: \\"3\\"
         Received: \\"1\\"",
           ],
           "suites": Array [
@@ -178,7 +189,7 @@ describe('Test with defect', () => {
       .each([{ a: '1' }, { a: '3' }])
       .each([{ b: '2', expected: '3' }])
       .defect('SOME_ID', t => t.a === '1', ['Expected: "3"', 'Received: "1"'])
-      .run(t => expect(t.a).toBe(t.expected));
+      .run(t => removeStack(() => expect(t.a).toBe(t.expected)));
 
     await waitFinished();
 
@@ -198,6 +209,8 @@ describe('Test with defect', () => {
             "Test marked with defect 'SOME_ID': Actual fail reason:\\\\n expect(received).toBe(expected) // Object.is equality
 
         Expected: \\"3\\"
+        Received: \\"1\\"
+        Error: expect(received).toBe(expected) // Object.is equalityExpected: \\"3\\"
         Received: \\"1\\"",
           ],
           "suites": Array [
@@ -219,7 +232,7 @@ describe('Test with defect', () => {
       .each([{ a: '1' }, { a: '3' }])
       .each([{ b: '2', expected: '3' }])
       .defect('SOME_ID', t => t.a === '1', ['Expected: "5"', 'Received: "1"'])
-      .run(t => expect(t.a).toBe(t.expected));
+      .run(t => removeStack(() => expect(t.a).toBe(t.expected)));
 
     await waitFinished();
 
@@ -233,6 +246,8 @@ describe('Test with defect', () => {
          \\"expect(received).toBe(expected) // Object.is equality
 
         Expected: \\"3\\"
+        Received: \\"1\\"
+        Error: expect(received).toBe(expected) // Object.is equalityExpected: \\"3\\"
         Received: \\"1\\"\\"",
               "name": "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'5\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
             },
@@ -248,6 +263,51 @@ describe('Test with defect', () => {
           ],
           "tests": Array [
             "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'5\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
+            "a: 3, b: 2, expected: 3",
+          ],
+          "totalEntities": 3,
+        }
+      `),
+    );
+  });
+
+  it('should search for actual reasons in err stack as well as in err.message', async () => {
+    test()
+      .config(config)
+      .each([{ a: '1' }, { a: '3' }])
+      .each([{ b: '2', expected: '3' }])
+      .defect('SOME_ID', t => t.a === '1', ['Some message', 'Some stack'])
+      .run(t => {
+        const err = new Error('Some message');
+        err.stack = 'Some stack';
+        throw err;
+      });
+
+    await waitFinished();
+
+    assertAll(() =>
+      expect(result).toMatchInlineSnapshot(`
+        Object {
+          "failures": Array [
+            Object {
+              "message": "Some message",
+              "name": "a: 3, b: 2, expected: 3",
+            },
+          ],
+          "passes": Array [
+            Object {
+              "name": "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Some message', 'Some stack'] - Marked with defect 'SOME_ID'",
+            },
+          ],
+          "skips": Array [
+            "Test marked with defect 'SOME_ID': Actual fail reason:\\\\n Some message
+        Some stack",
+          ],
+          "suites": Array [
+            "Test pack - root",
+          ],
+          "tests": Array [
+            "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Some message', 'Some stack'] - Marked with defect 'SOME_ID'",
             "a: 3, b: 2, expected: 3",
           ],
           "totalEntities": 3,

@@ -128,7 +128,7 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
         try {
           await this.runBody(body, args, isBefore);
         } catch (err) {
-          const alignedMessage = stripAnsi(err.message);
+          const alignedMessage = [stripAnsi(err.message), stripAnsi(err.stack)].join('\n');
           const markPending = () => {
             this.env.pending(
               `Test marked with defect '${markedDefect}': Actual fail reason:\\n ${alignedMessage}`,
