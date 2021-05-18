@@ -189,7 +189,7 @@ describe('Test jest test each', () => {
       .each([{ something1: 'a' }, { something1: 'b' }])
       .each([{ brother: 'john' }, { brother: 'george' }])
       .each([{ sister: 'mila' }, { sister: 'rita' }])
-      .flatDesc(t => t.brother + ' ' + t.something1 + ' ' + t.sister)
+      .desc(t => t.brother + ' ' + t.something1 + ' ' + t.sister)
       .run(t => success());
   });
 
@@ -199,7 +199,7 @@ describe('Test jest test each', () => {
       .each([{ something1: 'a' }, { something1: 'b' }])
       .each([{ brother: 'john' }, { brother: 'george' }])
       .each([{ sister: 'mila' }, { sister: 'rita' }])
-      .flatDesc(t => t.brother + ' ' + t.something1 + ' ' + t.sister)
+      .desc(t => t.brother + ' ' + t.something1 + ' ' + t.sister)
       .run(t => success());
 
     await waitFinished();

@@ -10,6 +10,10 @@ export type TestSetupType = {
    */
   groupBySuites: boolean;
   /**
+   * Group tests by test name suite
+   */
+  groupParentBySuite: boolean;
+  /**
    * Run tests concurrently (for jest -> it.concurrent)
    */
   concurrent: boolean;
@@ -26,6 +30,7 @@ export type TestSetupType = {
 export const testConfigDefault: TestSetupType = {
   numericCases: true,
   groupBySuites: true,
+  groupParentBySuite: true,
   concurrent: false,
   testSuiteName: {
     maxLength: 200,

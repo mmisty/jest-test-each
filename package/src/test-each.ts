@@ -38,11 +38,11 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
   private onlyOneFilter: InputFilter<Combined> | undefined = undefined;
   private flatDescFunc: DescFunc<Combined> | undefined = undefined;
 
-  private readonly desc: string | undefined = '';
+  private readonly testParentDesc: string | undefined = '';
   private readonly env: Env;
 
   constructor(desc: string | undefined) {
-    this.desc = desc;
+    this.testParentDesc = desc;
     this.conf = testConfig.config;
 
     this.env = userEnv.env ?? testEnvDefault().env;
@@ -92,7 +92,7 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
     return this;
   }
 
-  flatDesc(input: DescFunc<Combined>): TestEach<Combined, BeforeT> {
+  desc(input: DescFunc<Combined>): TestEach<Combined, BeforeT> {
     this.flatDescFunc = input;
     return this;
   }
@@ -294,7 +294,7 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
   };
 
   run(body: (each: Combined, before: BeforeT) => void) {
-    const { groupBySuites, testSuiteName } = this.conf;
+    const { groupBySuites, testSuiteName, groupParentBySuite } = this.conf;
     const maxTestNameLength = testSuiteName.maxLength;
     const useConcurrency = this.concurrentTests || this.conf.concurrent;
 
@@ -311,12 +311,20 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
       const additionalData = { ...defect };
       const fullDatNoFlatDesc = [currentTest.data, additionalData];
       const mergedFullData = merge(fullDatNoFlatDesc);
-      const flatDesc = { flatDesc: mergedFullData.flatDesc || this.flatDescFunc?.(mergedFullData) };
+      const desc = mergedFullData.flatDesc || this.flatDescFunc?.(mergedFullData);
+      const flatDesc = {
+        flatDesc: groupParentBySuite ? desc : desc ? `${this.testParentDesc} ${desc}` : undefined,
+      };
+
       const fullData = [...fullDatNoFlatDesc, flatDesc.flatDesc ? flatDesc : []];
       const partialData = [currentTest.partialData, additionalData];
 
       const nameCaseFull = getName(fullData, maxTestNameLength);
       const newName = getName(partialData, maxTestNameLength);
+      if (!groupBySuites && !groupParentBySuite) {
+        newName.name = `${this.testParentDesc} ${newName.name}`;
+        nameCaseFull.name = `${this.testParentDesc} ${nameCaseFull.name}`;
+      }
 
       const testCase: OneTest<Combined> = {
         ...currentTest,
@@ -328,13 +336,20 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
       allCases.push({
         ...testCase,
         name: nameCaseFull,
-        flatDesc: flatDesc.flatDesc,
+        isFlat: flatDesc.flatDesc,
       });
 
       return testCase;
     });
+    root.children.forEach(
+      n => (n.name = groupParentBySuite ? n.name : `${this.testParentDesc} ${n.name}`),
+    );
+    root.tests.forEach(
+      n =>
+        (n.name.name = groupParentBySuite ? n.name.name : `${this.testParentDesc} ${n.name.name}`),
+    );
 
-    const isFlat = allCases.every(p => p.flatDesc);
+    const isFlat = allCases.every(p => p.isFlat);
 
     if (this.onlyOne) {
       const caseFound = this.filterAndRunIfSearchFailed(testRunner, allCases);
@@ -344,15 +359,18 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
       allCases = this.onlyOneFilter ? [caseFound!] : [allCases[0]];
     }
 
-    if (this.groups.length === 0 && !!this.desc) {
+    if (this.groups.length === 0 && !!this.testParentDesc) {
       // should not group into suite when only one case
-      this.runTest(testRunner, this.desc!, body, undefined, true);
+      this.runTest(testRunner, this.testParentDesc!, body, undefined, true);
       this.testIfOnly(testRunner);
       return;
     }
 
     const suiteGuards = () => {
-      guard(!(this.groups.length === 0 && !this.desc), 'Test should have name when no cases');
+      guard(
+        !(this.groups.length === 0 && !this.testParentDesc),
+        'Test should have name when no cases',
+      );
       guard(
         !this.groups.some(p => checkObjEmpty(p)),
         'Every case in .each should have not empty data',
@@ -393,13 +411,19 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
         this.testIfOnly(testRunner);
         groupBySuites && !isFlat && !this.onlyOne ? tests() : testsFlat();
       },
-      this.desc,
+      this.testParentDesc,
+      groupParentBySuite,
     );
   }
 }
 
-const runSuite = (suiteRunner: Runner, callback: () => void, suiteName?: string) => {
-  if (suiteName) {
+const runSuite = (
+  suiteRunner: Runner,
+  callback: () => void,
+  suiteName?: string,
+  groupParent?: boolean,
+) => {
+  if (suiteName && groupParent) {
     suiteRunner(suiteName, () => {
       callback();
     });

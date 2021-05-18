@@ -12,6 +12,7 @@ This package will help you to run parametrised tests easily [typesafe] without t
 2. [Setup](#setup)
 3. [Features](#features)
 4. [What's next](#whats-next)
+5. [Releases](#releases)
 
 ## Examples
 
@@ -163,3 +164,8 @@ Running the feature containing this will result in 2 tests
 
 ## Unavailable features
 1. to start testEach by Idea plugin (**workaround**: wrap with describe and do not put name into Test Each)
+
+## Releases
+
+### 0.8.8
+- Ability to add flatDesc to cases simplier - as function for each (.each(..).desc(t=>...))

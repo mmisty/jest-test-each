@@ -3,7 +3,7 @@ import { CaseAddition } from './types';
 
 type OneTest<T> = {
   name: NameResult;
-  flatDesc?: string;
+  isFlat?: boolean;
   data: T;
   partialData: T;
 };
