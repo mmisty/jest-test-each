@@ -36,6 +36,7 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
   private onlyOne: boolean = false;
   private concurrentTests: boolean = false;
   private onlyOneFilter: InputFilter<Combined> | undefined = undefined;
+  private flatDescFunc: DescFunc<Combined> | undefined = undefined;
 
   private readonly desc: string | undefined = '';
   private readonly env: Env;
@@ -88,6 +89,11 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
 
   skip(reason: string): TestEach<Combined, BeforeT> {
     this.skippedTest = reason;
+    return this;
+  }
+
+  flatDesc(input: DescFunc<Combined>): TestEach<Combined, BeforeT> {
+    this.flatDescFunc = input;
     return this;
   }
 
@@ -303,8 +309,12 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
     const root = createTree(this.groups, maxTestNameLength, casesErrors, currentTest => {
       let defect = this.findDefect({ ...currentTest.data });
       const additionalData = { ...defect };
-      const fullData = [currentTest.data, additionalData];
+      const fullDatNoFlatDesc = [currentTest.data, additionalData];
+      const mergedFullData = merge(fullDatNoFlatDesc);
+      const flatDesc = { flatDesc: mergedFullData.flatDesc || this.flatDescFunc?.(mergedFullData) };
+      const fullData = [...fullDatNoFlatDesc, flatDesc.flatDesc ? flatDesc : []];
       const partialData = [currentTest.partialData, additionalData];
+
       const nameCaseFull = getName(fullData, maxTestNameLength);
       const newName = getName(partialData, maxTestNameLength);
 
@@ -318,7 +328,7 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
       allCases.push({
         ...testCase,
         name: nameCaseFull,
-        flatDesc: (testCase.data as SimpleCase<Combined>).flatDesc,
+        flatDesc: flatDesc.flatDesc,
       });
 
       return testCase;

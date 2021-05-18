@@ -72,10 +72,20 @@ Install dev dependency:
 yarn add -D jest-test-each
 ```
 
-Add the following into your config setup.js file which is referred in jest.config.js - setupFilesAfterEnv section:
+To setup jest you need to have jest.config.js config ([official details](https://jestjs.io/docs/configuration))
 
+In your jest.config.js config add:
+```javascript
+// jest.config.js
+module.exports = {
+  ...
+  setupFilesAfterEnv: ["./config/setup.js"],
+  ...
+};
 ```
-// Looking a way to improve this. Can anyone help ?)
+
+In './config/setup.js' file add the following (this is required for global vars to be available):
+```
 require('jest-test-each');
 ```
 
