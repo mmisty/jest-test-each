@@ -167,5 +167,20 @@ Running the feature containing this will result in 2 tests
 
 ## Releases
 
+### 0.9.0
+Supporting jest 27.
+
+Working with Skip and Defect: 
+1. When using test-runner 'jest-circus' (default runner in jest 27):
+     - defected tests which fail will not be marked skipped as it was before, it will be marked as passed.
+     - defected tests which passed will fail as before 
+     - skipping test will not run test but it will be marked as passed
+2. When using test runner 'jest-jasmine2' everything will be as before. 
+You can add the following in jest.config.js to use 'jest-jasmine2' runner:
+    ```json
+     test-runner: "jest-jasmine2"
+    ```
+
+
 ### 0.8.8
 - Ability to add flatDesc to cases simplier - as function for each (.each(..).desc(t=>...))
