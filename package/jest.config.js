@@ -1,6 +1,7 @@
 module.exports = {
   verbose: true,
   testEnvironment: 'node',
+  // testRunner: 'jest-jasmine2',
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },

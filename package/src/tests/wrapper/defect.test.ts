@@ -101,10 +101,10 @@ describe('Test with defect', () => {
           "failures": Array [],
           "passes": Array [
             Object {
-              "name": "a: 1, b: 2, expected: 3, defect: SOME_ID - Marked with defect 'SOME_ID'",
+              "name": "a: 3, b: 2, expected: 3",
             },
             Object {
-              "name": "a: 3, b: 2, expected: 3",
+              "name": "a: 1, b: 2, expected: 3, defect: SOME_ID - Marked with defect 'SOME_ID'",
             },
           ],
           "skips": Array [
@@ -195,34 +195,34 @@ describe('Test with defect', () => {
 
     assertAll(() =>
       expect(result).toMatchInlineSnapshot(`
-        Object {
-          "failures": Array [],
-          "passes": Array [
-            Object {
-              "name": "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
-            },
-            Object {
-              "name": "a: 3, b: 2, expected: 3",
-            },
-          ],
-          "skips": Array [
-            "Test marked with defect 'SOME_ID': Actual fail reason:\\\\n expect(received).toBe(expected) // Object.is equality
+Object {
+  "failures": Array [],
+  "passes": Array [
+    Object {
+      "name": "a: 3, b: 2, expected: 3",
+    },
+    Object {
+      "name": "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
+    },
+  ],
+  "skips": Array [
+    "Test marked with defect 'SOME_ID': Actual fail reason:\\\\n expect(received).toBe(expected) // Object.is equality
 
-        Expected: \\"3\\"
-        Received: \\"1\\"
-        Error: expect(received).toBe(expected) // Object.is equalityExpected: \\"3\\"
-        Received: \\"1\\"",
-          ],
-          "suites": Array [
-            "Test pack - root",
-          ],
-          "tests": Array [
-            "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
-            "a: 3, b: 2, expected: 3",
-          ],
-          "totalEntities": 3,
-        }
-      `),
+Expected: \\"3\\"
+Received: \\"1\\"
+Error: expect(received).toBe(expected) // Object.is equalityExpected: \\"3\\"
+Received: \\"1\\"",
+  ],
+  "suites": Array [
+    "Test pack - root",
+  ],
+  "tests": Array [
+    "a: 1, b: 2, expected: 3, defect: SOME_ID, actualFailReasonParts: ['Expected: \\\\'3\\\\'', 'Received: \\\\'1\\\\''] - Marked with defect 'SOME_ID'",
+    "a: 3, b: 2, expected: 3",
+  ],
+  "totalEntities": 3,
+}
+`),
     );
   });
 

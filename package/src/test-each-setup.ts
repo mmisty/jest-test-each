@@ -45,9 +45,20 @@ export const testConfig: { config: TestSetupType } = {
 export const TestEachSetup = (config: Partial<TestSetupType>) => {
   testConfig.config = { ...testConfig.config, ...config };
 };
-export const userEnv: { env?: Env } = {};
+export const userEnv: { env?: Env & EnvHasPending } = {};
+export type EnvHasPending = { envHasPending?: boolean };
 
-export const testEnvDefault: () => { env: Env } = () => ({
+const envHasPending = (): boolean => {
+  try {
+    // test-runner jest-jasmine2 has 'pending', jest-circus doesn't have
+    return !!pending;
+  } catch (err) {
+    return String(err).indexOf('pending is not defined') === -1;
+  }
+};
+const envPending = envHasPending();
+
+export const testEnvDefault: () => { env: Env & EnvHasPending } = () => ({
   env: {
     beforeEach,
     beforeAll,
@@ -55,10 +66,15 @@ export const testEnvDefault: () => { env: Env } = () => ({
     afterEach,
     it,
     describe,
-    pending,
+    envHasPending: envPending,
+    pending: (reason?: string) => {
+      if (envPending) {
+        return pending(reason);
+      }
+    },
   },
 });
 
-export const TestEachEnv = (env: Env) => {
-  userEnv.env = env;
+export const TestEachEnv = (env: Partial<Env>) => {
+  userEnv.env = { ...testEnvDefault().env, ...env };
 };

@@ -5,7 +5,7 @@ import { delay } from './utils';
 
 const stripAnsi = require('strip-ansi');
 
-const TestEachTesting = (env: Env) => (desc?: string) => {
+const TestEachTesting = (env: Partial<Env>) => (desc?: string) => {
   TestEachEnv(env);
   return new TestEach(desc);
 };
@@ -73,7 +73,7 @@ const testRunner = ((name: string, body: () => Promise<void>) => {
   result.tests.push(name);
 
   const resultBody = body();
-  if ((resultBody as any).then) {
+  if ((resultBody as any)?.then) {
     resultBody
       .then(k => result.passes.push({ name: name }))
       .catch(err => result.failures.push({ name, message: stripAnsi(err.message) }))
@@ -84,18 +84,17 @@ const testRunner = ((name: string, body: () => Promise<void>) => {
 testRunner.only = testRunner;
 testRunner.concurrent = testRunner;
 
+/*testRunner.skip = ((name: string, body: () => Promise<void>) => {
+  result.skips.push(stripAnsi(name || 'no reason'));
+}) as TestRunner;*/
+
 const pending = (reason?: string) => {
   result.skips.push(stripAnsi(reason || 'no reason'));
 };
 
-const testRunnerEnv: Env = {
-  describe: suiteRunner,
-  it: testRunner,
-  beforeEach,
-  beforeAll,
-  afterEach,
-  afterAll,
-  pending,
-};
-
-export const createTest = (desc?: string) => TestEachTesting(testRunnerEnv)(desc);
+export const createTest = (desc?: string) =>
+  TestEachTesting({
+    describe: suiteRunner,
+    it: testRunner,
+    pending,
+  })(desc);

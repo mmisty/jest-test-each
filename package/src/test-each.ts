@@ -2,7 +2,13 @@ import { guard, checkObjEmpty, merge } from './utils/utils';
 import { OneTest, treeWalk, createTree, ErrorEmitter } from './tree';
 import { CODE_RENAME, getName, messageFromRenameCode } from './utils/name';
 import { Env, Runner, TestRunner } from './test-env';
-import { testConfig, testEnvDefault, TestSetupType, userEnv } from './test-each-setup';
+import {
+  EnvHasPending,
+  testConfig,
+  testEnvDefault,
+  TestSetupType,
+  userEnv,
+} from './test-each-setup';
 import JestMatchers = jest.JestMatchers;
 import { CaseAddition, WithDefect, WithDesc } from './types';
 
@@ -39,7 +45,7 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
   private flatDescFunc: DescFunc<Combined> | undefined = undefined;
 
   private readonly testParentDesc: string | undefined = '';
-  private readonly env: Env;
+  private readonly env: Env & EnvHasPending;
 
   constructor(desc: string | undefined) {
     this.testParentDesc = desc;
@@ -131,34 +137,32 @@ export class TestEach<Combined extends CaseAddition = {}, BeforeT = {}> {
       if (markedDefect) {
         // if it passes -> fail
         // if it fails -> skip
-        try {
-          await this.runBody(body, args, isBefore);
-        } catch (err) {
-          const alignedMessage = [stripAnsi(err.message), stripAnsi(err.stack)].join('\n');
-          const markPending = () => {
-            this.env.pending(
-              `Test marked with defect '${markedDefect}': Actual fail reason:\\n ${alignedMessage}`,
-            );
-          };
-          // check reasons
-          if (reasons) {
-            if (reasons.every(r => alignedMessage.includes(r))) {
-              markPending();
-              return;
+        let error: string | undefined = undefined;
+
+        await this.runBody(body, args, isBefore)
+          .then(() => {
+            error = `Test doesn't fail but marked with defect`;
+          })
+          .catch(err => {
+            const alignedMessage = [stripAnsi(err.message), stripAnsi(err.stack)].join('\n');
+
+            // check reasons
+            if (!reasons || reasons.every(r => alignedMessage.includes(r))) {
+              // todo test will pass with jest-circus- need a way to skip test from inside for jest-circus
+              this.env.pending(`Test marked with defect '${markedDefect}': Actual fail reason:\\n ${alignedMessage}`);
             }
 
-            throw new Error(
-              `Actual fail reason doesn't contain [${reasons}]\nActual fail reason:\n "${alignedMessage}"`,
-            );
-          }
-          markPending();
-          return;
+            if (reasons && !reasons.every(r => alignedMessage.includes(r))) {
+              throw new Error(`Actual fail reason doesn't contain [${reasons}]\nActual fail reason:\n "${alignedMessage}"`);
+            }
+          });
+        
+        if (error) {
+          throw new Error(error);
         }
-
-        throw new Error(`Test doesn't fail but marked with defect`);
+      } else {
+        await this.runBody(body, args, isBefore);
       }
-
-      await this.runBody(body, args, isBefore);
     });
   }
 

@@ -26,3 +26,9 @@ function simpleFormatter(type: LogType, message: LogMessage): string {
 global.console = new CustomConsole(process.stdout, process.stderr, simpleFormatter);
 
 require('../src/index');
+
+/*
+TestEachEnv({
+  pending: (reason?: string) => {console.log(reason)},
+})
+*/
