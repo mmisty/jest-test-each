@@ -1,6 +1,6 @@
 {
   "name": "jest-test-each",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "run parametrised tests easily [typesafe] without text tables or arrays of arrays.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,7 +14,7 @@
   "author": "Taisia Pitko (mmisty) <minydas@yandex.ru>",
   "license": "MIT",
   "scripts": {
-    "prepublish": "pretty-quick && rm -rf dist/ && tsc && yarn test && cd ../tests/example && yarn && rm -rf ./node_modules/jest-test-each/dist && cp -R ../../package/dist ./node_modules/jest-test-each/ && yarn test",
+    "prepublish": "pretty-quick && yarn build && yarn test && cd ../tests/example && yarn && rm -rf ./node_modules/jest-test-each/dist && cp -R ../../package/dist ./node_modules/jest-test-each/ && yarn test",
     "build": "rm -rf dist/ && tsc",
     "fmt": "pretty-quick",
     "test": "jest --coverage",

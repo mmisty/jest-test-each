@@ -19,9 +19,13 @@ coverage
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 dist/
+package*/
 
 # Dependency directories
 node_modules/
 
 # Output of 'npm pack'
 *.tgz
+
+# misc
+.DS_Store
